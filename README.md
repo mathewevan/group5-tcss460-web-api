@@ -7,7 +7,7 @@
 ## Alpha Sprint Contribution
 - Matt: Set up heroku production api and github integration/deploy
 - Kaely:
-- Kylie:
+- Kylie: Added the GitHub Pages API link and updated Alpha Sprint comments in the README.md
 - Ken: Tested Heroku API in Postman, formatted README.md on GitHub.
 
 ## Alpha Sprint Meetings
@@ -16,3 +16,4 @@
 - Doing our communication through Discord Server for our Group.
 
 ## Alpha Sprint Comments
+- Since the alpha sprint required not too much that could be done outside of the Heroku production setup, that is reflected in our Alpha Sprint Contributions.
