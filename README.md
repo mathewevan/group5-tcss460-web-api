@@ -2,7 +2,7 @@
  
 ## Links
 - [Heroku Web API](https://group5-tcss460-web-api-865cf04f06ba.herokuapp.com/)
-- [GitHub Pages API Documentation()
+- [GitHub Pages API Documentation] (https://mathewevan.github.io/group5-tcss460-web-api/)
 
 ## Alpha Sprint Contribution
 - Matt:
