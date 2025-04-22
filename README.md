@@ -5,7 +5,7 @@
 - [GitHub Pages API Documentation](https://mathewevan.github.io/group5-tcss460-web-api/)
 
 ## Alpha Sprint Contribution
-- Matt:
+- Matt: Set up heroku production api and github integration/deploy
 - Kaely:
 - Kylie:
 - Ken: Tested Heroku API in Postman, formatted README.md on GitHub.
