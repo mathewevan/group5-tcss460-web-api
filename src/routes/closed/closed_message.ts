@@ -248,7 +248,7 @@ messageRouter.post(
             request.body.ratings_4,
             request.body.ratings_5,
             request.body.image_url,
-            request.body.small_image_url,
+            request.body.small_image_url
         ];
 
         try {
