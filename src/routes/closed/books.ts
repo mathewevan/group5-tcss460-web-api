@@ -146,7 +146,7 @@ bookRouter.post('/', async (request: Request, response: Response) => {
     try {
         if (
             !isNumberProvided(request.body.id) ||
-            !isStringProvided(request.body.isbn13) ||
+            !isNumberProvided(request.body.isbn13) ||
             !isStringProvided(request.body.authors) ||
             !isNumberProvided(request.body.publication_year) ||
             !isStringProvided(request.body.original_title) ||
