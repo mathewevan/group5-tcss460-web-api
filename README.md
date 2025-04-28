@@ -8,11 +8,11 @@
 - We worked collaboratively at same time in a voice channel in general.
 - Matt: 
 - Kaely:
-- Kylie: 
+- Kylie: Created the base for the inserting a book route and testing, added organizational files, and debugged throughout the functionality implementation.
 - Ken: Created the three routes, did apiDOC for new routes, formatted README.md on GitHub.
 
 ## Beta Sprint Meetings
-- Sunday: 1pm-9pm~ , Monday: 8pm~, Thursday: 8pm-9pm.
+- Sunday: 1pm-10:30pm~ , Monday: 8pm~, Thursday: 8pm-9pm.
 - Did vast majority of the work on Sunday, as it was the only time we were all free as a group. 
   - We felt that we should work on the code collaboratively so we all understood the process behind each aspect of what we had to implement.
   - Database completed and populated, all three routes added (get by ISBN, get by Author and post a book).
