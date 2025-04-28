@@ -12,7 +12,7 @@ const isNumberProvided = validationFunctions.isNumberProvided;
  * @api {get} /isbn/:isbn13 Request to retrieve a book by ISBN
  * @apiName GetBookByISBN
  * @apiGroup Book (Closed)
- * @apiDescription Retrieves a single book based on the provided ISBN-13 number.
+ * @apiDescription Retrieves a single book based on the provided ISBN-13 number. Closed route, requires auth. token.
  *
  * @apiParam {String} isbn13 The ISBN-13 number of the book.
  *
@@ -54,7 +54,7 @@ bookRouter.get(
  * @api {get} /author/:author Request to retrieve books by Author
  * @apiName GetBooksByAuthor
  * @apiGroup Book (Closed)
- * @apiDescription Retrieves all books that match the given author's name (partial matches allowed).
+ * @apiDescription Retrieves all books that match the given author's name (partial matches allowed). Closed route, requires auth. token.
  *
  * @apiParam {String} author Author name or part of the name to search for.
  *
@@ -98,7 +98,7 @@ bookRouter.get(
  * @api {post} / Request to add a book
  * @apiName AddBook
  * @apiGroup Book (Closed)
- * @apiDescription Adds a new book to the database. Closed route, need auth. token.
+ * @apiDescription Adds a new book to the database. Closed route, requires auth. token.
  *
  * @apiBody {Number} id Unique ID of the book.
  * @apiBody {String} isbn13 ISBN-13 number of the book.
