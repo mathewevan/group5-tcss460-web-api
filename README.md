@@ -15,7 +15,7 @@
 - Sunday: 1pm-10:30pm~ , Monday: 8pm~, Thursday: 8pm-9pm.
 - Did vast majority of the work on Sunday, as it was the only time we were all free as a group. 
   - We felt that we should work on the code collaboratively so we all understood the process behind each aspect of what we had to implement.
-  - Database completed and populated, all three routes added (get by ISBN, get by Author and post a book).
+  - Database completed and populated, all three routes added (get by ISBN, get by Author, post a book, tests created for all routes, apiDoc done for routes).
   - Tests written and confirmed working.
   - API documentation completed.
 - Doing our communication through Discord Server for our Group, messages and voice channel.
