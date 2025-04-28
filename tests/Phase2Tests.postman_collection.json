@@ -1,0 +1,443 @@
+{
+	"info": {
+		"_postman_id": "557ac27d-e4c1-4759-aa83-b23fa2ff7b8b",
+		"name": "Phase2Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43884542",
+		"_collection_link": "https://mathew-7003892.postman.co/workspace/Message-Routes~c9802e89-0980-4ccd-a00a-024e1a1d5398/collection/43884542-557ac27d-e4c1-4759-aa83-b23fa2ff7b8b?action=share&source=collection_link&creator=43884542"
+	},
+	"item": [
+		{
+			"name": "test get by ISBN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for successful response\r",
+							"pm.test(\"Status code is 200 for valid ISBN\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains 'entry' property\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('entry');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Entry contains expected book properties\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.entry).to.have.property('isbn13');\r",
+							"    pm.expect(jsonData.entry).to.have.property('title');\r",
+							"    pm.expect(jsonData.entry).to.have.property('authors');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book/isbn/9780345391800",
+					"host": [
+						"{{base_url}}book"
+					],
+					"path": [
+						"isbn",
+						"9780345391800"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test fail ISBN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"// Test for not found response, only run as test if expecting 404\r",
+							"pm.test(\"Status code is 404 for invalid ISBN\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains error message for invalid ISBN\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('ISBN13 not found');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book/isbn/9780345391801",
+					"host": [
+						"{{base_url}}book"
+					],
+					"path": [
+						"isbn",
+						"9780345391801"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test add new book",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let randomISBN = Math.floor(Math.random() * 10100) + 1000000000000 ;\r",
+							"let randomId = Math.floor(Math.random() * 1000) + 1000000;\r",
+							"\r",
+							"pm.globals.set(\"ISBN\", randomISBN);\r",
+							"pm.globals.set(\"id\", randomId);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var body = JSON.parse(pm.request.body.raw)\r",
+							"\r",
+							"pm.test(\"Book is Created\", function() {\r",
+							"    pm.expect(body.id).to.equal(pm.globals.get(\"id\"));\r",
+							"    pm.expect(body.isbn13).to.equal(pm.globals.get(\"ISBN\"));\r",
+							"    pm.expect(body.authors).to.equal(\"John Doe, Jane Smith\");\r",
+							"    pm.expect(body.publication_year).to.equal(2020);\r",
+							"    pm.expect(body.original_title).to.equal(\"The Great Adventure\");\r",
+							"    pm.expect(body.title).to.equal(\"The Great Adventure - Expanded Edition\");\r",
+							"    pm.expect(body.rating_avg).to.equal(4.5);\r",
+							"    pm.expect(body.rating_count).to.equal(1500);\r",
+							"    pm.expect(body.ratings_1_star).to.equal(100);\r",
+							"    pm.expect(body.ratings_2_star).to.equal(200);\r",
+							"    pm.expect(body.ratings_3_star).to.equal(400);\r",
+							"    pm.expect(body.ratings_4_star).to.equal(500);\r",
+							"    pm.expect(body.ratings_5_star).to.equal(300);\r",
+							"    pm.expect(body.image_url).to.equal(\"http://example.com/images/book_cover.jpg\");\r",
+							"    pm.expect(body.image_small_url).to.equal(\"http://example.com/images/book_cover_small.jpg\");\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{id}},\r\n    \"isbn13\": {{ISBN}},\r\n    \"authors\": \"John Doe, Jane Smith\",\r\n    \"publication_year\": 2020,\r\n    \"original_title\": \"The Great Adventure\",\r\n    \"title\": \"The Great Adventure - Expanded Edition\",\r\n    \"rating_avg\": 4.5,\r\n    \"rating_count\": 1500,\r\n    \"ratings_1_star\": 100,\r\n    \"ratings_2_star\": 200,\r\n    \"ratings_3_star\": 400,\r\n    \"ratings_4_star\": 500,\r\n    \"ratings_5_star\": 300,\r\n    \"image_url\": \"http://example.com/images/book_cover.jpg\",\r\n    \"image_small_url\": \"http://example.com/images/book_cover_small.jpg\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book",
+					"host": [
+						"{{base_url}}book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test fail add book",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var body = JSON.parse(pm.request.body.raw)\r",
+							"\r",
+							"pm.test(\"Book is not created\", function() {\r",
+							"    \r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"isbn13\": 9780439023480,\r\n    \"authors\": \"John Doe, Jane Smith\",\r\n    \"publication_year\": 2020,\r\n    \"original_title\": \"The Great Adventure\",\r\n    \"title\": \"The Great Adventure - Expanded Edition\",\r\n    \"rating_avg\": 4.5,\r\n    \"rating_count\": 1500,\r\n    \"ratings_1_star\": 100,\r\n    \"ratings_2_star\": 200,\r\n    \"ratings_3_star\": 400,\r\n    \"ratings_4_star\": 500,\r\n    \"ratings_5_star\": 300,\r\n    \"image_url\": \"http://example.com/images/book_cover.jpg\",\r\n    \"image_small_url\": \"http://example.com/images/book_cover_small.jpg\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book",
+					"host": [
+						"{{base_url}}book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test get by author",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const selectedAuthor= \"Miller\"\r",
+							"\r",
+							"pm.environment.set(\"author\", selectedAuthor);\r",
+							"\r",
+							"console.log(`Author Selected: ${selectedAuthor}`);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"console.log(\"Response JSON:\", jsonData);\r",
+							"\r",
+							"pm.test(\"Check that each book entry contains author matching search term\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    const authorSearch = pm.variables.get(\"author\");\r",
+							"\r",
+							"    if (jsonData.entries.length > 0) {\r",
+							"        jsonData.entries.forEach(book => {\r",
+							"            pm.expect(book.authors.toLowerCase()).to.include(authorSearch.toLowerCase());\r",
+							"        });\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 10400,\r\n    \"isbn13\": \"1111111111111\",\r\n    \"authors\": \"Mathew Miller\",\r\n    \"publication_year\": 2025,\r\n    \"original_title\": \"Routers For Dummies\",\r\n    \"title\": \"Routers For Dummies\",\r\n    \"rating_avg\": 5.0,\r\n    \"rating_count\": 5,\r\n    \"ratings_1_star\": 5,\r\n    \"ratings_2_star\": 5,\r\n    \"ratings_3_star\": 5,\r\n    \"ratings_4_star\": 5,\r\n    \"ratings_5_star\": 5,\r\n    \"image_url\": \"https://example.com/image.jpg\",\r\n    \"image_small_url\": \"www.IhateRouters.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book/author/Miller",
+					"host": [
+						"{{base_url}}book"
+					],
+					"path": [
+						"author",
+						"Miller"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get unknown author",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const selectedAuthor= \"Miller\"\r",
+							"\r",
+							"pm.environment.set(\"author\", selectedAuthor);\r",
+							"\r",
+							"console.log(`Author Selected: ${selectedAuthor}`);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}book/author/ziggler",
+					"host": [
+						"{{base_url}}book"
+					],
+					"path": [
+						"author",
+						"ziggler"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

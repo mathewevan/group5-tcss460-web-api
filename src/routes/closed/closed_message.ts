@@ -231,11 +231,24 @@ messageRouter.post(
         //We're using placeholders ($1, $2, $3) in the SQL query string to avoid SQL Injection
         //If you want to read more: https://stackoverflow.com/a/8265319
         const theQuery =
-            'INSERT INTO DEMO(Name, Message, Priority) VALUES ($1, $2, $3) RETURNING *';
+            //'INSERT INTO DEMO(Name, Message, Priority) VALUES ($1, $2, $3) RETURNING *';
+            'INSERT INTO BOOKS(book_id, isbn13, authors, original_publication_year, original_title, title, average_rating, ratings_count, ratings_1, ratings_2, ratings_3, ratings_4, ratings_5, image_url, small_image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
         const values = [
-            request.body.name,
-            request.body.message,
-            request.body.priority,
+            request.body.book_id,
+            request.body.isbn13,
+            request.body.authors,
+            request.body.original_publication_year,
+            request.body.original_title,
+            request.body.title,
+            request.body.average_rating,
+            request.body.ratings_count,
+            request.body.ratings_1,
+            request.body.ratings_2,
+            request.body.ratings_3,
+            request.body.ratings_4,
+            request.body.ratings_5,
+            request.body.image_url,
+            request.body.small_image_url
         ];
 
         try {
