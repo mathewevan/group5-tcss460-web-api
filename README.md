@@ -1,20 +1,22 @@
-# Published Web API version Alpha
+# Published Web API version Beta
  
 ## Links
 - [Heroku Web API](https://group5-tcss460-web-api-865cf04f06ba.herokuapp.com/)
 - [GitHub Pages API Documentation](https://mathewevan.github.io/group5-tcss460-web-api/docs)
 
-## Alpha Sprint Contribution
-- Matt: Set up heroku production api and github integration/deploy
-- Kaely: Facilitated meeting scheduling, updated comments in Alpha Sprint README
-- Kylie: Added the GitHub Pages API link and updated Alpha Sprint comments in the README.md
-- Ken: Tested Heroku API in Postman, formatted README.md on GitHub.
+## Beta Sprint Contribution
+- We worked collaboratively at same time in a voice channel in general.
+- Matt: 
+- Kaely:
+- Kylie: 
+- Ken: Created the three routes, did apiDOC for new routes, formatted README.md on GitHub.
 
-## Alpha Sprint Meetings
-- Held our first meeting on 4/17 to do the Group Introduction and figure out our schedule for meetings.
-- Sunday: 8pm-9pm, Monday: 8pm~, Thursday: 8pm-9pm.
-- Held a short additional meeting on Sunday to determine if needs were met for Alpha sprint. Decuded to forgo the scheduled Monday meeting due to lack of available instruction.
-- Doing our communication through Discord Server for our Group.
+## Beta Sprint Meetings
+- Sunday: 1pm-9pm~ , Monday: 8pm~, Thursday: 8pm-9pm.
+- Did vast majority of the work on Sunday, as it was the only time we were all free as a group. 
+  - We felt that we should work on the code collaboratively so we all understood the process behind each aspect of what we had to implement.
+  - Database completed and populated, all three routes added (get by ISBN, get by Author and post a book).
+- Doing our communication through Discord Server for our Group, messages and voice channel.
 
-## Alpha Sprint Comments
-- Since the alpha sprint required not too much that could be done outside of the Heroku production setup, that is reflected in our Alpha Sprint Contributions.
+## Beta Sprint Comments
+- 
