@@ -75,18 +75,18 @@ bookRouter.post('/', async (request: Request, response: Response) => {
         request.body.id,
         request.body.isbn13,
         request.body.authors,
-        request.body.original_publication_year,
+        request.body.publication_year,
         request.body.original_title,
         request.body.title,
-        request.body.average_rating,
-        request.body.ratings_count,
-        request.body.ratings_1,
-        request.body.ratings_2,
-        request.body.ratings_3,
-        request.body.ratings_4,
-        request.body.ratings_5,
+        request.body.rating_avg,
+        request.body.rating_count,
+        request.body.ratings_1_star,
+        request.body.ratings_2_star,
+        request.body.ratings_3_star,
+        request.body.ratings_4_star,
+        request.body.ratings_5_star,
         request.body.image_url,
-        request.body.small_image_url,
+        request.body.image_small_url,
     ];
 
     try {
@@ -94,18 +94,18 @@ bookRouter.post('/', async (request: Request, response: Response) => {
             !isNumberProvided(request.body.id) ||
             !isNumberProvided(request.body.isbn13) ||
             !isStringProvided(request.body.authors) ||
-            !isNumberProvided(request.body.original_publication_year) ||
+            !isNumberProvided(request.body.publication_year) ||
             !isStringProvided(request.body.original_title) ||
             !isStringProvided(request.body.title) ||
-            !isNumberProvided(request.body.average_rating) ||
-            !isNumberProvided(request.body.ratings_count) ||
-            !isNumberProvided(request.body.ratings_1) ||
-            !isNumberProvided(request.body.ratings_2) ||
-            !isNumberProvided(request.body.ratings_3) ||
-            !isNumberProvided(request.body.ratings_4) ||
-            !isNumberProvided(request.body.ratings_5) ||
+            !isNumberProvided(request.body.rating_avg) ||
+            !isNumberProvided(request.body.rating_count) ||
+            !isNumberProvided(request.body.ratings_1_star) ||
+            !isNumberProvided(request.body.ratings_2_star) ||
+            !isNumberProvided(request.body.ratings_3_star) ||
+            !isNumberProvided(request.body.ratings_4_star) ||
+            !isNumberProvided(request.body.ratings_5_star) ||
             !isStringProvided(request.body.image_url) ||
-            !isStringProvided(request.body.small_image_url)
+            !isStringProvided(request.body.image_small_url)
         ) {
             console.error('Invalid datatype or missing parameter');
             response.status(400).send({
