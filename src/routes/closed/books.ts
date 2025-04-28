@@ -8,6 +8,19 @@ const bookRouter: Router = express.Router();
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
+/**
+ * @api {get} /isbn/:isbn13 Request to retrieve a book by ISBN
+ * @apiName GetBookByISBN
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves a single book based on the provided ISBN-13 number.
+ *
+ * @apiParam {String} isbn13 The ISBN-13 number of the book.
+ *
+ * @apiSuccess {Object} entry Details of the found book.
+ *
+ * @apiError (Error 404) NotFound No book found with the specified ISBN-13.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
 bookRouter.get(
     '/isbn/:isbn13',
     async (request: Request, response: Response) => {
@@ -37,6 +50,20 @@ bookRouter.get(
     }
 );
 
+/**
+ * @api {get} /author/:author Request to retrieve books by Author
+ * @apiName GetBooksByAuthor
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves all books that match the given author's name (partial matches allowed).
+ *
+ * @apiParam {String} author Author name or part of the name to search for.
+ *
+ * @apiSuccess {Object[]} entries List of books written by the specified author.
+ *
+ * @apiError (Error 400) InvalidParameter Invalid or missing author parameter.
+ * @apiError (Error 404) NotFound No books found for the specified author.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
 bookRouter.get(
     '/author/:author',
     async (request: Request, response: Response) => {
@@ -67,7 +94,34 @@ bookRouter.get(
         }
     }
 );
-
+/**
+ * @api {post} / Request to add a book
+ * @apiName AddBook
+ * @apiGroup Book (Closed)
+ * @apiDescription Adds a new book to the database. Closed route, need auth. token.
+ *
+ * @apiBody {Number} id Unique ID of the book.
+ * @apiBody {String} isbn13 ISBN-13 number of the book.
+ * @apiBody {String} authors Author(s) of the book.
+ * @apiBody {Number} publication_year Year the book was published.
+ * @apiBody {String} original_title Original title of the book.
+ * @apiBody {String} title Title of the book.
+ * @apiBody {Number} rating_avg Average rating of the book.
+ * @apiBody {Number} rating_count Total number of ratings.
+ * @apiBody {Number} ratings_1_star Count of 1-star ratings.
+ * @apiBody {Number} ratings_2_star Count of 2-star ratings.
+ * @apiBody {Number} ratings_3_star Count of 3-star ratings.
+ * @apiBody {Number} ratings_4_star Count of 4-star ratings.
+ * @apiBody {Number} ratings_5_star Count of 5-star ratings.
+ * @apiBody {String} image_url URL to the book's cover image.
+ * @apiBody {String} image_small_url URL to the book's small cover image.
+ *
+ * @apiSuccess {Object} entry Details of the created book entry.
+ *
+ * @apiError (Error 400) InvalidData Invalid datatype or missing parameter.
+ * @apiError (Error 400) DuplicateBook Book ID already exists.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
 bookRouter.post('/', async (request: Request, response: Response) => {
     const theQuery =
         'INSERT INTO BOOKS(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
@@ -92,7 +146,7 @@ bookRouter.post('/', async (request: Request, response: Response) => {
     try {
         if (
             !isNumberProvided(request.body.id) ||
-            !isNumberProvided(request.body.isbn13) ||
+            !isStringProvided(request.body.isbn13) ||
             !isStringProvided(request.body.authors) ||
             !isNumberProvided(request.body.publication_year) ||
             !isStringProvided(request.body.original_title) ||
