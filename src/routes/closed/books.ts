@@ -116,7 +116,7 @@ bookRouter.get(
  * @apiBody {String} image_url URL to the book's cover image.
  * @apiBody {String} image_small_url URL to the book's small cover image.
  *
- * @apiSuccess {Object} entry Details of the created book entry.
+ * @apiSuccess (Success 201) {Object} entry Details of the created book entry.
  *
  * @apiError (Error 400) InvalidData Invalid datatype or missing parameter.
  * @apiError (Error 400) DuplicateBook Book ID already exists.
