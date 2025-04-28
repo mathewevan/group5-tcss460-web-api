@@ -67,7 +67,7 @@ booksRouter.get('/isbn/:isbn13', (request: Request, response: Response) => {
 //get by author
 booksRouter.get('/authors/:author', (request: Request, response: Response) => {
     const theQuery =
-        'SELECT * FROM BOOKS WHERE author CONTAINS $1';
+        "SELECT * FROM BOOKS WHERE authors ILIKE '%' || $1 || '%'";
     const values = [request.params.author];
 
     pool.query(theQuery, values)
