@@ -6,7 +6,7 @@
 
 ## Beta Sprint Contribution
 - We worked collaboratively at same time in a voice channel in general.
-- Matt: 
+- Matt: Lead the sprint, much debugging for postgreql, created tests for routes on postman,
 - Kaely: Created SQL script to import and create tables, added GET for Author, wrote tests for ISBN Get.
 - Kylie: Created the base for the inserting a book route and testing, added organizational files, and debugged throughout the functionality implementation.
 - Ken: Created the three routes, did apiDOC for new routes, formatted README.md on GitHub.
@@ -21,4 +21,4 @@
 - Doing our communication through Discord Server for our Group, messages and voice channel.
 
 ## Beta Sprint Comments
-- 
+- N/A
