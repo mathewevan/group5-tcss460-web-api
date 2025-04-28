@@ -36,6 +36,7 @@ const isNumberProvided = validationFunctions.isNumberProvided;
 //     }
 // }
 
+// get by ISBN
 booksRouter.get('/isbn/:isbn13', (request: Request, response: Response) => {
     const theQuery =
         'SELECT * FROM BOOKS WHERE isbn13 = $1';
@@ -56,6 +57,34 @@ booksRouter.get('/isbn/:isbn13', (request: Request, response: Response) => {
         .catch((error) => {
             //log the error
             console.error('DB Query error on GET by ISBN13');
+            console.error(error);
+            response.status(500).send({
+                message: 'server error - contact support',
+            });
+        });
+});
+
+//get by author
+booksRouter.get('/authors/:author', (request: Request, response: Response) => {
+    const theQuery =
+        'SELECT * FROM BOOKS WHERE author CONTAINS $1';
+    const values = [request.params.author];
+
+    pool.query(theQuery, values)
+        .then((result) => {
+            if (result.rowCount > 0) {
+                response.send({
+                    entries: result.rows
+                });
+            } else {
+                response.status(404).send({
+                    message: 'Author name not found',
+                });
+            }
+        })
+        .catch((error) => {
+            //log the error
+            console.error('DB Query error on GET by Author');
             console.error(error);
             response.status(500).send({
                 message: 'server error - contact support',
