@@ -9,7 +9,7 @@ const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
 /**
- * @api {get} /isbn/:isbn13 Request to retrieve a book by ISBN
+ * @api {get} /book/isbn/:isbn13 Request to retrieve a book by ISBN
  * @apiName GetBookByISBN
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves a single book based on the provided ISBN-13 number. Closed route, requires auth. token.
@@ -51,7 +51,7 @@ bookRouter.get(
 );
 
 /**
- * @api {get} /author/:author Request to retrieve books by Author
+ * @api {get} /book/author/:author Request to retrieve books by Author
  * @apiName GetBooksByAuthor
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves all books that match the given author's name (partial matches allowed). Closed route, requires auth. token.
@@ -95,7 +95,7 @@ bookRouter.get(
     }
 );
 /**
- * @api {post} / Request to add a book
+ * @api {post} /book/ Request to add a book
  * @apiName AddBook
  * @apiGroup Book (Closed)
  * @apiDescription Adds a new book to the database. Closed route, requires auth. token.
@@ -217,6 +217,26 @@ function mwValidPatchQuery(
     }
 }
 
+/**
+ * @api {patch} /book/rating Request to update book rating(s)
+ * @apiName UpdateBookRating
+ * @apiGroup Book (Closed)
+ *
+ * @apiDescription Updates a book's ratings based on book id, auto calculates/updates rating_count and rating_avg.
+ *
+ * @apiBody {Number} id The ID of the book to update.
+ * @apiBody {Number} rating_1_star Count of 1-star ratings (must be >= 0).
+ * @apiBody {Number} rating_2_star Count of 2-star ratings (must be >= 0).
+ * @apiBody {Number} rating_3_star Count of 3-star ratings (must be >= 0).
+ * @apiBody {Number} rating_4_star Count of 4-star ratings (must be >= 0).
+ * @apiBody {Number} rating_5_star Count of 5-star ratings (must be >= 0).
+ *
+ * @apiSuccess {Object} entries The new updated rating statistics.
+ *
+ * @apiError (Error 400) {String} message One or more fields are missing or invalid.
+ * @apiError (Error 404) {String} message No book found for the specified ID.
+ * @apiError (Error 500) {String}  Internal server error.
+ */
 bookRouter.patch(
     '/rating',
     mwValidPatchQuery,

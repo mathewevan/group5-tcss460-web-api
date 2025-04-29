@@ -22,6 +22,23 @@ const generateSalt = credentialingFunctions.generateSalt;
 
 const passRouter: Router = express.Router();
 
+/**
+ * @api {patch} /password/changepassword Request to change user password
+ * @apiName ChangePassword
+ * @apiGroup Auth
+ *
+ * @apiDescription Allows a user to change their password by verifying the old password and setting a new one. newPassword must be 7 characters minimum.
+ *
+ * @apiBody {String} email The user's email address.
+ * @apiBody {String} oldPassword The user's current password.
+ * @apiBody {String} newPassword The new password to set (must be at least 7 characters).
+ *
+ * @apiSuccess {String} message Success message indicating password update.
+ *
+ * @apiError (Error 400) {String} message Invalid input or credentials.
+ * @apiError (Error 500) {String} ServerError Internal server error.
+ *
+ */
 passRouter.patch(
     '/changepassword',
     (request: AuthRequest, response: Response) => {
