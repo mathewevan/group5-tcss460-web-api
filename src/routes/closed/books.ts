@@ -9,7 +9,7 @@ const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
 /**
- * @api {get} /isbn/:isbn13 Request to retrieve a book by ISBN
+ * @api {get} /book/isbn/:isbn13 Request to retrieve a book by ISBN
  * @apiName GetBookByISBN
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves a single book based on the provided ISBN-13 number. Closed route, requires auth. token.
@@ -51,7 +51,7 @@ bookRouter.get(
 );
 
 /**
- * @api {get} /author/:author Request to retrieve books by Author
+ * @api {get} /book/author/:author Request to retrieve books by Author
  * @apiName GetBooksByAuthor
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves all books that match the given author's name (partial matches allowed). Closed route, requires auth. token.
@@ -95,7 +95,7 @@ bookRouter.get(
     }
 );
 /**
- * @api {post} / Request to add a book
+ * @api {post} /book/ Request to add a book
  * @apiName AddBook
  * @apiGroup Book (Closed)
  * @apiDescription Adds a new book to the database. Closed route, requires auth. token.
