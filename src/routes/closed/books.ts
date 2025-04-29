@@ -123,8 +123,9 @@ bookRouter.get(
  * @apiError (Error 500) ServerError Internal server error.
  */
 bookRouter.post('/', async (request: Request, response: Response) => {
-    const theQuery =
-        'INSERT INTO BOOKS(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+    const theQuery = `INSERT INTO BOOKS(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, 
+                        rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
     const values = [
         request.body.id,
         request.body.isbn13,
@@ -186,5 +187,94 @@ bookRouter.post('/', async (request: Request, response: Response) => {
         }
     }
 });
+
+function mwValidPatchQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.id) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        request.body.rating_1_star >= 0 &&
+        isNumberProvided(request.body.rating_2_star) &&
+        request.body.rating_2_star >= 0 &&
+        isNumberProvided(request.body.rating_3_star) &&
+        request.body.rating_3_star >= 0 &&
+        isNumberProvided(request.body.rating_4_star) &&
+        request.body.rating_4_star >= 0 &&
+        isNumberProvided(request.body.rating_5_star) &&
+        request.body.rating_5_star >= 0
+    ) {
+        next();
+    } else {
+        console.error('Invalid or missing body field.');
+        response.status(400).send({
+            message:
+                'Invalid or missing body field. - please refer to documentation',
+        });
+        return;
+    }
+}
+
+bookRouter.patch(
+    '/rating',
+    mwValidPatchQuery,
+    async (request: Request, response: Response) => {
+        const theQuery = `UPDATE books 
+                        SET rating_count = $2,
+                            rating_1_star = $3,
+                            rating_2_star = $4,
+                            rating_3_star = $5,
+                            rating_4_star = $6,
+                            rating_5_star = $7,
+                            rating_avg = $8 
+                        WHERE id = $1
+                        RETURNING *
+                        `;
+        const ratings = [
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+        ];
+        let ratingCount = 0;
+        let ratingSum = 0;
+        for (let i = 1; i < 6; i++) {
+            // not sure if we want to calculate rating_avg in db?
+            ratingCount += ratings[i - 1];
+            ratingSum += ratings[i - 1] * i;
+        }
+        const ratingAvg = (
+            ratingCount > 0 ? ratingSum / ratingCount : 0
+        ).toFixed(2); // rounded to 2 decimal places
+        const values = [
+            request.body.id,
+            ratingCount,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            ratingAvg,
+        ];
+        try {
+            const result = await pool.query(theQuery, values);
+            if (result.rowCount > 0) {
+                return response.json({ entries: result.rows[0] });
+            } else {
+                return response.status(404).json({
+                    message: 'No book found for that id',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on PATCH /rating ', error);
+            return response.status(500).json({
+                message: 'server error - contact support',
+            });
+        }
+    }
+);
 
 export { bookRouter };

@@ -64,8 +64,8 @@ const emailMiddlewareCheck = (
 /**
  * @api {post} /register Request to register a user
  *
- * @apiDescription Document this route. !**Document the password rules here**!
- * !**Document the role rules here**!
+ * @apiDescription Minimum password length is 7 characters. Roles are from 1 to 5.
+ *
  *
  * @apiName PostRegister
  * @apiGroup Auth
