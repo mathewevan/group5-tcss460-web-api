@@ -2,11 +2,100 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
+import { messageRouter } from './closed_message';
 
 const bookRouter: Router = express.Router();
 
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
+
+/**
+ * @api {get} /all Get All Books
+ *
+ * @apiDescription Retrieves a paginated list of books from the database.
+ *    The entries are sorted by author name ascending.
+ *
+ * @apiParam {Number} [limit=10] The number of books to return per page.
+ * @apiParam {Number} [offset=0] The offset for pagination.
+ *
+ * @apiSuccess {Object[]} entries List of books.
+ * @apiSuccess {Object} pagination Pagination details.
+ * @apiSuccess {Number} pagination.totalRecords Total number of records available.
+ * @apiSuccess {Number} pagination.limit Number of records returned per page.
+ * @apiSuccess {Number} pagination.offset Offset for pagination.
+ * @apiSuccess {Number} pagination.nextPage Offset value for the next page.
+ *
+ * @apiExample {curl} Example usage:
+ *    curl -X GET "http://yourserver.com/all?limit=1&offset=0"
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *     "entries": [
+ *         {
+ *             "id": 444,
+ *             "isbn13": "9780399162410",
+ *             "authors": "A.A. Milne, Ernest H. Shepard",
+ *             "publication_year": 2011,
+ *             "original_title": "The 5th Wave",
+ *             "title": "Winnie-the-Pooh (Winnie-the-Pooh, #1)",
+ *             "rating_avg": 4.34,
+ *             "rating_count": 207550,
+ *             "rating_1_star": 2636,
+ *             "rating_2_star": 5254,
+ *             "rating_3_star": 28148,
+ *             "rating_4_star": 60427,
+ *             "rating_5_star": 118748,
+ *             "image_url": "https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png",
+ *             "image_small_url": "https://s.gr-assets.com/assets/nophoto/book/50x75-a91bf249278a81aabab721ef782c4a74.png"
+ *         }
+ *     ],
+ *     "pagination": {
+ *         "totalRecords": "9425",
+ *         "limit": 1,
+ *         "offset": 0,
+ *         "nextPage": 1
+ *     }
+ * }
+ */
+bookRouter.get('/all', async (request: Request, response: Response) => {
+
+    const limit: number =
+        isNumberProvided(request.query.limit) && +request.query.limit > 0
+            ? +request.query.limit
+            : 10;
+    const offset: number =
+        isNumberProvided(request.query.offset) && +request.query.offset >= 0
+            ? +request.query.offset
+            : 0;
+
+    const theQuery = `SELECT *
+            FROM books 
+            ORDER BY books.authors
+            LIMIT $1
+            OFFSET $2`;
+
+    const values = [limit, offset];
+
+
+    const { rows } = await pool.query(theQuery, values);
+
+
+    const result = await pool.query(
+        'SELECT count(*) AS exact_count FROM books;'
+    );
+    const count = result.rows[0].exact_count;
+
+    response.send({
+        entries: rows,
+        pagination: {
+            totalRecords: count,
+            limit,
+            offset,
+            nextPage: limit + offset,
+        },
+    });
+});
 
 /**
  * @api {get} /book/isbn/:isbn13 Request to retrieve a book by ISBN
@@ -24,7 +113,7 @@ const isNumberProvided = validationFunctions.isNumberProvided;
 bookRouter.get(
     '/isbn/:isbn13',
     async (request: Request, response: Response) => {
-        const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
+        const theQuery = 'SELECT * FROM books WHERE isbn13 = $1';
         const values = [request.params.isbn13];
 
         pool.query(theQuery, values)
@@ -68,7 +157,7 @@ bookRouter.get(
     '/author/:author',
     async (request: Request, response: Response) => {
         const theQuery =
-            "SELECT * FROM BOOKS WHERE authors ILIKE '%' || $1 || '%'";
+            "SELECT * FROM books WHERE authors ILIKE '%' || $1 || '%'";
         const values = [request.params.author];
         try {
             if (!isStringProvided(request.params.author)) {
@@ -123,7 +212,7 @@ bookRouter.get(
  * @apiError (Error 500) ServerError Internal server error.
  */
 bookRouter.post('/', async (request: Request, response: Response) => {
-    const theQuery = `INSERT INTO BOOKS(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, 
+    const theQuery = `INSERT INTO books(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, 
                         rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) 
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
     const values = [
