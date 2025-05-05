@@ -352,8 +352,8 @@ bookRouter.patch(
         let ratingSum = 0;
         for (let i = 1; i < 6; i++) {
             // not sure if we want to calculate rating_avg in db?
-            ratingCount += ratings[i - 1];
-            ratingSum += ratings[i - 1] * i;
+            ratingCount += Number(ratings[i - 1]);
+            ratingSum += Number(ratings[i - 1] * i);
         }
         const ratingAvg = (
             ratingCount > 0 ? ratingSum / ratingCount : 0
