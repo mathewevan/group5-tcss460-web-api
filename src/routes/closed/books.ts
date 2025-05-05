@@ -10,6 +10,96 @@ const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
 /**
+ * @api {get} /book/all Request to get paginated books
+ * @apiName Get Books Paginated
+ * @apiGroup Book (Closed)
+ *
+ * @apiDescription Retrieves a paginated list of books from the database.
+ *    The entries are sorted by author name ascending.
+ *
+ * @apiParam {Number} [limit=10] The number of books to return per page.
+ * @apiParam {Number} [offset=0] The offset for pagination.
+ *
+ * @apiSuccess {Object[]} entries List of books.
+ * @apiSuccess {Object} pagination Pagination details.
+ * @apiSuccess {Number} pagination.totalRecords Total number of records available.
+ * @apiSuccess {Number} pagination.limit Number of records returned per page.
+ * @apiSuccess {Number} pagination.offset Offset for pagination.
+ * @apiSuccess {Number} pagination.nextPage Offset value for the next page.
+ *
+ * @apiExample {curl} Example usage:
+ *    curl -X GET "http://yourserver.com/all?limit=1&offset=0"
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ * {
+ *     "entries": [
+ *         {
+ *             "id": 444,
+ *             "isbn13": "9780399162410",
+ *             "authors": "A.A. Milne, Ernest H. Shepard",
+ *             "publication_year": 2011,
+ *             "original_title": "The 5th Wave",
+ *             "title": "Winnie-the-Pooh (Winnie-the-Pooh, #1)",
+ *             "rating_avg": 4.34,
+ *             "rating_count": 207550,
+ *             "rating_1_star": 2636,
+ *             "rating_2_star": 5254,
+ *             "rating_3_star": 28148,
+ *             "rating_4_star": 60427,
+ *             "rating_5_star": 118748,
+ *             "image_url": "https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png",
+ *             "image_small_url": "https://s.gr-assets.com/assets/nophoto/book/50x75-a91bf249278a81aabab721ef782c4a74.png"
+ *         }
+ *     ],
+ *     "pagination": {
+ *         "totalRecords": "9425",
+ *         "limit": 1,
+ *         "offset": 0,
+ *         "nextPage": 1
+ *     }
+ * }
+ */
+bookRouter.get('/all', async (request: Request, response: Response) => {
+
+    const limit: number =
+        isNumberProvided(request.query.limit) && +request.query.limit > 0
+            ? +request.query.limit
+            : 10;
+    const offset: number =
+        isNumberProvided(request.query.offset) && +request.query.offset >= 0
+            ? +request.query.offset
+            : 0;
+
+    const theQuery = `SELECT *
+            FROM books 
+            ORDER BY books.authors
+            LIMIT $1
+            OFFSET $2`;
+
+    const values = [limit, offset];
+
+
+    const { rows } = await pool.query(theQuery, values);
+
+
+    const result = await pool.query(
+        'SELECT count(*) AS exact_count FROM books;'
+    );
+    const count = result.rows[0].exact_count;
+
+    response.send({
+        entries: rows,
+        pagination: {
+            totalRecords: count,
+            limit,
+            offset,
+            nextPage: limit + offset,
+        },
+    });
+});
+
+/**
  * @api {get} /book/isbn/:isbn13 Request to retrieve a book by ISBN
  * @apiName GetBookByISBN
  * @apiGroup Book (Closed)
