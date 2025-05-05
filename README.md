@@ -5,7 +5,7 @@
 - [GitHub Pages API Documentation](https://mathewevan.github.io/group5-tcss460-web-api/docs)
 
 ## Beta II Sprint Contribution
-- Matt: 
+- Matt: Created route gor getting books with pagination and tests for said route. Assisted in debugging and general team support.
 - Kaely: 
 - Kylie: 
 - Ken: Created routes for changing user password and updating a specific book's rating(s).
