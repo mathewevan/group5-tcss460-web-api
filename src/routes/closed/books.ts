@@ -10,7 +10,9 @@ const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
 /**
- * @api {get} /all Get All Books
+ * @api {get} /book/all Request to get paginated books
+ * @apiName Get Books Paginated
+ * @apiGroup Book (Closed)
  *
  * @apiDescription Retrieves a paginated list of books from the database.
  *    The entries are sorted by author name ascending.
@@ -356,8 +358,8 @@ bookRouter.patch(
             ratingSum += Number(ratings[i - 1] * i);
         }
         const ratingAvg = (
-            ratingCount > 0 ? ratingSum / ratingCount : 0
-        ).toFixed(2); // rounded to 2 decimal places
+            Number(ratingCount > 0 ? ratingSum / ratingCount : 0
+        ).toFixed(2)); // rounded to 2 decimal places
         const values = [
             request.body.id,
             ratingCount,
