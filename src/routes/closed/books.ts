@@ -2,6 +2,7 @@
 import express, { NextFunction, Request, Response, Router } from 'express';
 //Access the connection to Postgres Database
 import { pool, validationFunctions } from '../../core/utilities';
+import { messageRouter } from './closed_message';
 
 const bookRouter: Router = express.Router();
 
@@ -24,7 +25,7 @@ const isNumberProvided = validationFunctions.isNumberProvided;
 bookRouter.get(
     '/isbn/:isbn13',
     async (request: Request, response: Response) => {
-        const theQuery = 'SELECT * FROM BOOKS WHERE isbn13 = $1';
+        const theQuery = 'SELECT * FROM books WHERE isbn13 = $1';
         const values = [request.params.isbn13];
 
         pool.query(theQuery, values)
@@ -68,7 +69,7 @@ bookRouter.get(
     '/author/:author',
     async (request: Request, response: Response) => {
         const theQuery =
-            "SELECT * FROM BOOKS WHERE authors ILIKE '%' || $1 || '%'";
+            "SELECT * FROM books WHERE authors ILIKE '%' || $1 || '%'";
         const values = [request.params.author];
         try {
             if (!isStringProvided(request.params.author)) {
@@ -123,8 +124,9 @@ bookRouter.get(
  * @apiError (Error 500) ServerError Internal server error.
  */
 bookRouter.post('/', async (request: Request, response: Response) => {
-    const theQuery =
-        'INSERT INTO BOOKS(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+    const theQuery = `INSERT INTO books(id, isbn13, authors, publication_year, original_title, title, rating_avg, rating_count, 
+                        rating_1_star, rating_2_star, rating_3_star, rating_4_star, rating_5_star, image_url, image_small_url) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
     const values = [
         request.body.id,
         request.body.isbn13,
@@ -186,5 +188,114 @@ bookRouter.post('/', async (request: Request, response: Response) => {
         }
     }
 });
+
+function mwValidPatchQuery(
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    if (
+        isNumberProvided(request.body.id) &&
+        isNumberProvided(request.body.rating_1_star) &&
+        request.body.rating_1_star >= 0 &&
+        isNumberProvided(request.body.rating_2_star) &&
+        request.body.rating_2_star >= 0 &&
+        isNumberProvided(request.body.rating_3_star) &&
+        request.body.rating_3_star >= 0 &&
+        isNumberProvided(request.body.rating_4_star) &&
+        request.body.rating_4_star >= 0 &&
+        isNumberProvided(request.body.rating_5_star) &&
+        request.body.rating_5_star >= 0
+    ) {
+        next();
+    } else {
+        console.error('Invalid or missing body field.');
+        response.status(400).send({
+            message:
+                'Invalid or missing body field. - please refer to documentation',
+        });
+        return;
+    }
+}
+
+/**
+ * @api {patch} /book/rating Request to update book rating(s)
+ * @apiName UpdateBookRating
+ * @apiGroup Book (Closed)
+ *
+ * @apiDescription Updates a book's ratings based on book id, auto calculates/updates rating_count and rating_avg.
+ *
+ * @apiBody {Number} id The ID of the book to update.
+ * @apiBody {Number} rating_1_star Count of 1-star ratings (must be >= 0).
+ * @apiBody {Number} rating_2_star Count of 2-star ratings (must be >= 0).
+ * @apiBody {Number} rating_3_star Count of 3-star ratings (must be >= 0).
+ * @apiBody {Number} rating_4_star Count of 4-star ratings (must be >= 0).
+ * @apiBody {Number} rating_5_star Count of 5-star ratings (must be >= 0).
+ *
+ * @apiSuccess {Object} entries The new updated rating statistics.
+ *
+ * @apiError (Error 400) {String} message One or more fields are missing or invalid.
+ * @apiError (Error 404) {String} message No book found for the specified ID.
+ * @apiError (Error 500) {String}  Internal server error.
+ */
+bookRouter.patch(
+    '/rating',
+    mwValidPatchQuery,
+    async (request: Request, response: Response) => {
+        const theQuery = `UPDATE books 
+                        SET rating_count = $2,
+                            rating_1_star = $3,
+                            rating_2_star = $4,
+                            rating_3_star = $5,
+                            rating_4_star = $6,
+                            rating_5_star = $7,
+                            rating_avg = $8
+                        WHERE id = $1
+                        RETURNING *
+                        `;
+        const ratings = [
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+        ];
+        let ratingCount = 0;
+        let ratingSum = 0;
+        for (let i = 1; i < 6; i++) {
+            // not sure if we want to calculate rating_avg in db?
+            ratingCount += Number(ratings[i - 1]);
+            ratingSum += Number(ratings[i - 1] * i);
+        }
+        const ratingAvg = (
+            Number(ratingCount > 0 ? ratingSum / ratingCount : 0
+        ).toFixed(2)); // rounded to 2 decimal places
+        const values = [
+            request.body.id,
+            ratingCount,
+            request.body.rating_1_star,
+            request.body.rating_2_star,
+            request.body.rating_3_star,
+            request.body.rating_4_star,
+            request.body.rating_5_star,
+            ratingAvg,
+        ];
+        try {
+            const result = await pool.query(theQuery, values);
+            if (result.rowCount > 0) {
+                return response.json({ entries: result.rows[0] });
+            } else {
+                return response.status(404).json({
+                    message: 'No book found for that id',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on PATCH /rating ', error);
+            return response.status(500).json({
+                message: 'server error - contact support',
+            });
+        }
+    }
+);
 
 export { bookRouter };
