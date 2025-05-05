@@ -1,0 +1,334 @@
+{
+	"info": {
+		"_postman_id": "7cafbc60-ef18-457a-9b30-e41884baecc7",
+		"name": "Beta II Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44127359",
+		"_collection_link": "https://kaely-3655961.postman.co/workspace/Kaely's-Workspace~aeaa6066-b254-4a5d-86d5-7dc5c7e86960/collection/44127359-7cafbc60-ef18-457a-9b30-e41884baecc7?action=share&source=collection_link&creator=44127359"
+	},
+	"item": [
+		{
+			"name": "Successful Password Change Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for successful password change\r",
+							"pm.test(\"Status code is 200 for successful password change\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains success message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Password updated successfully');\r",
+							"});\r",
+							"\r",
+							"// Test for invalid credentials (email not found or old password incorrect)\r",
+							"pm.test(\"Status code is 400 for invalid credentials\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains invalid credentials message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid Credentials');\r",
+							"});\r",
+							"\r",
+							"// Test for missing email or old password\r",
+							"pm.test(\"Status code is 400 for missing email or old password\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains missing email/password message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid or missing email / oldPass - please refer to documentation');\r",
+							"});\r",
+							"\r",
+							"// Test for invalid new password (less than 7 characters)\r",
+							"pm.test(\"Status code is 400 for invalid new password\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains invalid new password message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid or missing new password - please refer to documentation');\r",
+							"});\r",
+							"\r",
+							"// Test for server error\r",
+							"pm.test(\"Status code is 500 for server error\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains server error message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Server error - contact support');\r",
+							"});\r",
+							"\r",
+							"// Additional validation for request body structure\r",
+							"pm.test(\"Request includes required parameters\", function () {\r",
+							"    const requestBody = pm.request.body;\r",
+							"    if (requestBody) {\r",
+							"        const jsonData = JSON.parse(requestBody.raw);\r",
+							"        console.log(\"Request Body:\", jsonData);\r",
+							"        pm.expect(jsonData).to.have.property('email');\r",
+							"        pm.expect(jsonData).to.have.property('oldPassword');\r",
+							"        pm.expect(jsonData).to.have.property('newPassword');\r",
+							"        pm.expect(jsonData.newPassword.length).to.be.at.least(7);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"\",\r\n    \"oldPassword\": \"\",\r\n    \"newPassword\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/password/changepassword",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"password",
+						"changepassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pagination Success Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 and has entries/pagination\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.have.jsonBody('entries');\r",
+							"    pm.response.to.have.jsonBody('pagination');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Default pagination limit and offset\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.pagination.limit).to.eql(10);\r",
+							"    pm.expect(responseJson.pagination.offset).to.eql(0);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Specific limit applied\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    const expectedLimit = parseInt(pm.request.url.query.get(\"limit\")) || 10; \r",
+							"    pm.expect(responseJson.entries.length).to.be.at.most(expectedLimit);\r",
+							"    pm.expect(responseJson.pagination.limit).to.eql(expectedLimit);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Specific offset applied\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    const expectedOffset = parseInt(pm.request.url.query.get(\"offset\")) || 0; \r",
+							"    pm.expect(responseJson.pagination.offset).to.eql(expectedOffset);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Next page value is a number\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.pagination.nextPage).to.be.a('number');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/all",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Rating Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for successful password change\r",
+							"pm.test(\"Status code is 200 for successful password change\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains success message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Password updated successfully');\r",
+							"});\r",
+							"\r",
+							"// Test for invalid credentials (email not found or old password incorrect)\r",
+							"pm.test(\"Status code is 400 for invalid credentials\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains invalid credentials message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid Credentials');\r",
+							"});\r",
+							"\r",
+							"// Test for missing email or old password\r",
+							"pm.test(\"Status code is 400 for missing email or old password\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains missing email/password message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid or missing email / oldPass - please refer to documentation');\r",
+							"});\r",
+							"\r",
+							"// Test for invalid new password (less than 7 characters)\r",
+							"pm.test(\"Status code is 400 for invalid new password\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains invalid new password message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Invalid or missing new password - please refer to documentation');\r",
+							"});\r",
+							"\r",
+							"// Test for server error\r",
+							"pm.test(\"Status code is 500 for server error\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains server error message\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('message');\r",
+							"    pm.expect(jsonData.message).to.equal('Server error - contact support');\r",
+							"});\r",
+							"\r",
+							"// Additional validation for request body structure\r",
+							"pm.test(\"Request includes required parameters\", function () {\r",
+							"    const requestBody = pm.request.body;\r",
+							"    if (requestBody) {\r",
+							"        const jsonData = JSON.parse(requestBody.raw);\r",
+							"        console.log(\"Request Body:\", jsonData);\r",
+							"        pm.expect(jsonData).to.have.property('email');\r",
+							"        pm.expect(jsonData).to.have.property('oldPassword');\r",
+							"        pm.expect(jsonData).to.have.property('newPassword');\r",
+							"        pm.expect(jsonData.newPassword.length).to.be.at.least(7);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"\",\r\n    \"oldPassword\": \"\",\r\n    \"newPassword\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/changepassword",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"changepassword"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
