@@ -337,7 +337,8 @@ bookRouter.patch(
                             rating_3_star = $5,
                             rating_4_star = $6,
                             rating_5_star = $7,
-                            rating_avg = $8 
+                            rating_avg = $8,
+                            rating_count = $9
                         WHERE id = $1
                         RETURNING *
                         `;
@@ -367,6 +368,7 @@ bookRouter.patch(
             request.body.rating_4_star,
             request.body.rating_5_star,
             ratingAvg,
+            ratingCount,
         ];
         try {
             const result = await pool.query(theQuery, values);
