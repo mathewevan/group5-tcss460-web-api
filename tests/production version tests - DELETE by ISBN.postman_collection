@@ -1,0 +1,226 @@
+{
+	"info": {
+		"_postman_id": "79b980f7-a779-482c-b528-5578b9affbde",
+		"name": "production version tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44173490",
+		"_collection_link": "https://kenegawa.postman.co/workspace/Messages~817d4d2b-58a4-40b1-858c-1fd995e2737a/collection/44173490-79b980f7-a779-482c-b528-5578b9affbde?action=share&source=collection_link&creator=44173490"
+	},
+	"item": [
+		{
+			"name": "test isbn deletion success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"if (pm.response.code === 200) {\r",
+							"    pm.test(\"Delete success message\", () => {\r",
+							"        pm.expect(pm.response.json().message).to.eql(\"Book deleted from database\");\r",
+							"    });\r",
+							"} else { // This test should not run, pre-request creates a matching isbn book entry if doesn't exist.\r",
+							"    console.error(\"Unexpected response:\", pm.response.text());\r",
+							"    pm.test(\"Unexpected response - should have been 200\", () => {\r",
+							"        pm.expect(pm.response.code).to.equal(200);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const baseUrl = pm.environment.get(\"base_url\");\r",
+							"const isbn = 1234567891011;\r",
+							"let bookId = 1132123334;\r",
+							"\r",
+							"// Get authentication token if needed\r",
+							"const authToken = pm.environment.get(\"auth_token\"); // Make sure this is set in your environment\r",
+							"\r",
+							"// Setup headers for all requests\r",
+							"const headers = {\r",
+							"    \"Content-Type\": \"application/json\"\r",
+							"};\r",
+							"\r",
+							"// Add authorization header if token exists\r",
+							"if (authToken) {\r",
+							"    headers[\"Authorization\"] = `Bearer ${authToken}`;\r",
+							"    // Or use the appropriate auth format: \"Basic\", etc. depending on your API\r",
+							"}\r",
+							"\r",
+							"// try to create book w/ expected isbn\r",
+							"pm.sendRequest({\r",
+							"    url: `${baseUrl}/book/isbn/${isbn}`,\r",
+							"    method: \"GET\",\r",
+							"    header: headers\r",
+							"}, (err, res) => {\r",
+							"    if (err) {\r",
+							"        console.error(\"Error in pre-request:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    // 2) If not found, POST a new one\r",
+							"    console.log(\"POSTing new book to match isbn\")\r",
+							"    if (res.code === 404) {\r",
+							"        // if you don't already have a bookId, set one now\r",
+							"        if (!bookId) {\r",
+							"            bookId = Date.now();  \r",
+							"            pm.environment.set(\"bookId\", bookId);\r",
+							"        }\r",
+							"\r",
+							"        pm.sendRequest({\r",
+							"            url: `${baseUrl}/book/`,\r",
+							"            method: \"POST\",\r",
+							"            header: headers,\r",
+							"            body: {\r",
+							"                mode: \"raw\",\r",
+							"                raw: JSON.stringify({\r",
+							"                    id:               bookId,\r",
+							"                    isbn13:           isbn,\r",
+							"                    authors:          \"Auto Test Author\",\r",
+							"                    publication_year: 2025,\r",
+							"                    original_title:   \"Auto‑Created Title\",\r",
+							"                    title:            \"Auto‑Created Title\",\r",
+							"                    rating_avg:       0,\r",
+							"                    rating_count:     0,\r",
+							"                    ratings_1_star:   0,\r",
+							"                    ratings_2_star:   0,\r",
+							"                    ratings_3_star:   0,\r",
+							"                    ratings_4_star:   0,\r",
+							"                    ratings_5_star:   0,\r",
+							"                    image_url:        \"https://example.com/cover.jpg\",\r",
+							"                    image_small_url:  \"https://example.com/cover_small.jpg\"\r",
+							"                })\r",
+							"            }\r",
+							"        }, (err2, res2) => {\r",
+							"            if (err2) {\r",
+							"                console.error(\"Error creating book:\", err2);\r",
+							"                return;\r",
+							"            }\r",
+							"            \r",
+							"            console.log(\"Book creation response:\", res2.code, res2.status);\r",
+							"            \r",
+							"            if (res2.code !== 201) {\r",
+							"                console.error(\"Failed to create book:\", res2.text());\r",
+							"            } else {\r",
+							"                console.log(\"Successfully created book:\", res2.json());\r",
+							"                \r",
+							"                // Add a delay to ensure the book is properly registered in the database\r",
+							"                setTimeout(() => {\r",
+							"                    // Now execute the actual DELETE request\r",
+							"                    console.log(\"Now executing the DELETE request...\");\r",
+							"                    pm.variables.set(\"testReady\", \"true\");\r",
+							"                }, 1000);\r",
+							"            }\r",
+							"        });\r",
+							"    } else if (res.code === 401) {\r",
+							"        console.error(\"Authentication required! Please check your auth_token in the environment.\");\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    } else if (res.code === 200) {\r",
+							"        console.log(\"Book already exists, proceeding with DELETE test\");\r",
+							"        pm.variables.set(\"testReady\", \"true\");\r",
+							"    } else {\r",
+							"        console.log(\"Unexpected response:\", res.code, res.status);\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiMSIsImlkIjoxLCJpYXQiOjE3NDU4MDYzMzcsImV4cCI6MTc0NzAxNTkzN30.AUzJBdaqWGeJij5STboO2pPqzsYo_MiO3_XbQxhK3RU",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/book/isbn/1234567891011",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"isbn",
+						"1234567891011"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test isbn deletion failure",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", () => {\r",
+							"    pm.expect(pm.response.code).to.eql(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Not‑found message\", () => { // shouldn't get this test, creating book that matches isbn in pre-request.\r",
+							"    pm.expect(pm.response.json().message).to.eql(\"No book found for specified ISBN‑13\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiMSIsImlkIjoxLCJpYXQiOjE3NDU4MDYzMzcsImV4cCI6MTc0NzAxNTkzN30.AUzJBdaqWGeJij5STboO2pPqzsYo_MiO3_XbQxhK3RU",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/book/isbn/123456789101132131",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"isbn",
+						"123456789101132131"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
