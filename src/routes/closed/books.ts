@@ -411,7 +411,7 @@ bookRouter.delete('/:author', async (request: Request, response: Response) => {
     }
 });
 /**
- * @api {delete} /book/isbn:isbn13 Request to delete a book by ISBN
+ * @api {delete} /book/isbn/:isbn13 Request to delete a book by ISBN
  * @apiName DeleteBookByISBN
  * @apiGroup Book (Closed)
  *
@@ -425,7 +425,7 @@ bookRouter.delete('/:author', async (request: Request, response: Response) => {
  * @apiError (Error 500) {String} message  Internal server error.
  */
 bookRouter.delete(
-    '/isbn:isbn13',
+    '/isbn/:isbn13',
     async (request: Request, response: Response) => {
         const theQuery = `DELETE FROM BOOKS
                         WHERE isbn13 = $1;
@@ -439,7 +439,7 @@ bookRouter.delete(
                 });
             } else {
                 return response.status(404).json({
-                    message: 'No book found for that isbn13',
+                    message: 'No book found for specified ISBN‑13',
                 });
             }
         } catch (error) {
