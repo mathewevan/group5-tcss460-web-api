@@ -9,6 +9,31 @@ const bookRouter: Router = express.Router();
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
+interface IRatings {
+    average: number;
+    count: number;
+    rating_1: number;
+    rating_2: number;
+    rating_3: number;
+    rating_4: number;
+    rating_5: number;
+}
+
+interface IUrlIcon {
+    large: string;
+    small: string;
+}
+
+interface IBook {
+    isbn13: number;
+    authors: string;
+    publication: number;
+    original_title: string;
+    title: string;
+    ratings: IRatings;
+    icons: IUrlIcon;
+}
+
 /**
  * @api {get} /book/all Request to get paginated books
  * @apiName Get Books Paginated
@@ -118,11 +143,31 @@ bookRouter.get(
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
-                    response.send({
-                        entry: result.rows[0],
-                    });
+                    const dbBook = result.rows[0];
+                    const book: IBook = {
+                        isbn13: parseInt(dbBook.isbn13),
+                        authors: dbBook.authors,
+                        publication: dbBook.publication_year,
+                        original_title: dbBook.original_title,
+                        title: dbBook.title,
+                        ratings: {
+                            average: dbBook.average_rating,
+                            count: dbBook.rating_count,
+                            rating_1: dbBook.rating_1_count,
+                            rating_2: dbBook.rating_2_count,
+                            rating_3: dbBook.rating_3_count,
+                            rating_4: dbBook.rating_4_count,
+                            rating_5: dbBook.rating_5_count,
+                        },
+                        icons: {
+                            large: dbBook.large_icon_url,
+                            small: dbBook.small_icon_url,
+                        },
+                    };
+                    // Send the transformed data
+                    response.json(book);
                 } else {
-                    response.status(404).send({
+                    response.status(404).json({
                         message: 'ISBN13 not found',
                     });
                 }
@@ -168,7 +213,29 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                return response.json({ entries: result.rows });
+                const dbBook = result.rows[0];
+                const book: IBook = {
+                    isbn13: parseInt(dbBook.isbn13),
+                    authors: dbBook.authors,
+                    publication: dbBook.publication_year,
+                    original_title: dbBook.original_title,
+                    title: dbBook.title,
+                    ratings: {
+                        average: dbBook.average_rating,
+                        count: dbBook.rating_count,
+                        rating_1: dbBook.rating_1_count,
+                        rating_2: dbBook.rating_2_count,
+                        rating_3: dbBook.rating_3_count,
+                        rating_4: dbBook.rating_4_count,
+                        rating_5: dbBook.rating_5_count,
+                    },
+                    icons: {
+                        large: dbBook.large_icon_url,
+                        small: dbBook.small_icon_url,
+                    },
+                };
+                // Send the transformed data
+                response.json(book);
             } else {
                 return response.status(404).json({
                     message: 'No books found for that author',
@@ -257,9 +324,29 @@ bookRouter.post('/', async (request: Request, response: Response) => {
             return;
         }
         const result = await pool.query(theQuery, values);
-        response.status(201).send({
-            entry: result.rows[0],
-        });
+        const dbBook = result.rows[0];
+        const book: IBook = {
+            isbn13: parseInt(dbBook.isbn13),
+            authors: dbBook.authors,
+            publication: dbBook.publication_year,
+            original_title: dbBook.original_title,
+            title: dbBook.title,
+            ratings: {
+                average: dbBook.average_rating,
+                count: dbBook.rating_count,
+                rating_1: dbBook.rating_1_count,
+                rating_2: dbBook.rating_2_count,
+                rating_3: dbBook.rating_3_count,
+                rating_4: dbBook.rating_4_count,
+                rating_5: dbBook.rating_5_count,
+            },
+            icons: {
+                large: dbBook.large_icon_url,
+                small: dbBook.small_icon_url,
+            },
+        };
+        // Send the transformed data
+        response.json(book);
     } catch (error) {
         if (error.detail && <string>error.detail.endsWith('exists.')) {
             console.error('book_id exists');
