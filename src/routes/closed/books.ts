@@ -204,7 +204,7 @@ bookRouter.get(
     '/title/:title',
     async (request: Request, response: Response) => {
         const theQuery =
-            "SELECT * FROM books WHERE titles ILIKE '%' || $1 || '%'";
+            "SELECT * FROM books WHERE title ILIKE '%' || $1 || '%'";
         const values = [request.params.title];
         try {
             if (!isStringProvided(request.params.title)) {
