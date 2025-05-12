@@ -61,7 +61,6 @@ const isNumberProvided = validationFunctions.isNumberProvided;
  * }
  */
 bookRouter.get('/all', async (request: Request, response: Response) => {
-
     const limit: number =
         isNumberProvided(request.query.limit) && +request.query.limit > 0
             ? +request.query.limit
@@ -79,9 +78,7 @@ bookRouter.get('/all', async (request: Request, response: Response) => {
 
     const values = [limit, offset];
 
-
     const { rows } = await pool.query(theQuery, values);
-
 
     const result = await pool.query(
         'SELECT count(*) AS exact_count FROM books;'
@@ -403,9 +400,9 @@ bookRouter.patch(
             ratingCount += Number(ratings[i - 1]);
             ratingSum += Number(ratings[i - 1] * i);
         }
-        const ratingAvg = (
-            Number(ratingCount > 0 ? ratingSum / ratingCount : 0
-        ).toFixed(2)); // rounded to 2 decimal places
+        const ratingAvg = Number(
+            ratingCount > 0 ? ratingSum / ratingCount : 0
+        ).toFixed(2); // rounded to 2 decimal places
         const values = [
             request.body.id,
             ratingCount,
@@ -459,5 +456,45 @@ bookRouter.delete('/:author', async (request: Request, response: Response) => {
         });
     }
 });
+/**
+ * @api {delete} /book/isbn/:isbn13 Request to delete a book by ISBN
+ * @apiName DeleteBookByISBN
+ * @apiGroup Book (Closed)
+ *
+ * @apiDescription Deletes a book from the database by its ISBN‑13.
+ *
+ * @apiParam  {String} isbn13  The ISBN‑13 of the book to delete.
+ *
+ * @apiSuccess {String} message  Book deleted from database.
+ *
+ * @apiError (Error 404) {String} message  No book found for the specified ISBN‑13.
+ * @apiError (Error 500) {String} message  Internal server error.
+ */
+bookRouter.delete(
+    '/isbn/:isbn13',
+    async (request: Request, response: Response) => {
+        const theQuery = `DELETE FROM BOOKS
+                        WHERE isbn13 = $1;
+                        `;
+        const values = [request.params.isbn13];
+        try {
+            const result = await pool.query(theQuery, values);
+            if (result.rowCount > 0) {
+                return response.status(200).json({
+                    message: 'Book deleted from database',
+                });
+            } else {
+                return response.status(404).json({
+                    message: 'No book found for specified ISBN‑13',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on DELETE /book/isbn:isbn13', error);
+            return response.status(500).json({
+                message: 'server error - contact support',
+            });
+        }
+    }
+);
 
 export { bookRouter };
