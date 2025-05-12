@@ -229,6 +229,113 @@ bookRouter.get(
 );
 
 /**
+ * @api {get} /book/rating/:rating_avg Request to retrieve a book by rating average
+ * @apiName GetBookByRating
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves books based on the provided average rating number or rating category. Closed route, requires auth. token.
+ *
+ * @apiBody {Number} rating_avg Average rating of the book.
+ *
+ * @apiSuccess {Object} entry Details of the found book.
+ *
+ * @apiError (Error 404) NotFound No book found with the specified ISBN-13.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
+bookRouter.get(
+    '/rating/:rating_avg',
+    async (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE rating_avg= $1';
+        const values = [request.params.rating_avg];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entry: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: 'Books of this rating were not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on GET /:rating_avg');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
+/**
+ * @api {get} /book/year/:original_publication_year Request to retrieve a book by publication year
+ * @apiName GetBookByPublicationYear
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves a paginated list of books based on the provided publication year. Closed route, requires auth. token.
+ *
+ * @apiParam {Number} [limit=10] The number of books to return per page.
+ * @apiParam {Number} [offset=0] The offset for pagination.
+ *
+ * @apiSuccess {Object[]} entries List of books.
+ * @apiSuccess {Object} pagination Pagination details.
+ * @apiSuccess {Number} pagination.totalRecords Total number of records available.
+ * @apiSuccess {Number} pagination.limit Number of records returned per page.
+ * @apiSuccess {Number} pagination.offset Offset for pagination.
+ * @apiSuccess {Number} pagination.nextPage Offset value for the next page.
+ * @apiParam {String} publication_year The publication year of the book.
+ *
+ * @apiSuccess {Object} entry Details of the found book.
+ *
+ * @apiError (Error 404) NotFound No book found with the specified publication year.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
+bookRouter.get(
+    '/year/:publication_year',
+    async (request: Request, response: Response) => {
+        const limit: number =
+            isNumberProvided(request.query.limit) && +request.query.limit > 0
+                ? +request.query.limit
+                : 10;
+        const offset: number =
+            isNumberProvided(request.query.offset) && +request.query.offset >= 0
+                ? +request.query.offset
+                : 0;
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1 LIMIT $2 OFFSET $3';
+        const values = [request.params.publication_year, limit, offset];
+        const { rows } = await pool.query(theQuery, values);
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entries: rows,
+                        pagination: {
+                            limit,
+                            offset,
+                            nextPage: limit + offset,
+                        },
+                    });
+                } else {
+                    response.status(404).send({
+                        message: 'Publication Year not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on GET /:publication_year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
+/**
  * @api {post} /book/ Request to add a book
  * @apiName AddBook
  * @apiGroup Book (Closed)
