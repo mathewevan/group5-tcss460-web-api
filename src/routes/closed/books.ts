@@ -292,14 +292,28 @@ bookRouter.get(
 bookRouter.get(
     '/year/:publication_year',
     async (request: Request, response: Response) => {
-        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
-        const values = [request.params.publication_year];
+        const limit: number =
+            isNumberProvided(request.query.limit) && +request.query.limit > 0
+                ? +request.query.limit
+                : 10;
+        const offset: number =
+            isNumberProvided(request.query.offset) && +request.query.offset >= 0
+                ? +request.query.offset
+                : 0;
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1 LIMIT $2 OFFSET $3';
+        const values = [request.params.publication_year, limit, offset];
+        const { rows } = await pool.query(theQuery, values);
 
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
                     response.send({
-                        entry: result.rows,
+                        entries: rows,
+                        pagination: {
+                            limit,
+                            offset,
+                            nextPage: limit + offset,
+                        },
                     });
                 } else {
                     response.status(404).send({
