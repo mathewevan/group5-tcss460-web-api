@@ -257,7 +257,7 @@ bookRouter.get(
             .then((result) => {
                 if (result.rowCount > 0) {
                     response.send({
-                        entry: result.rows[0],
+                        entry: result.rows,
                     });
                 } else {
                     response.status(404).send({
