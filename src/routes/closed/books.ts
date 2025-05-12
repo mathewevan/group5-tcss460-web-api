@@ -388,4 +388,30 @@ bookRouter.patch(
     }
 );
 
+bookRouter.delete('/:author', async (request: Request, response: Response) => {
+    const theQuery = 'DELETE FROM books WHERE authors ILIKE $1 RETURNING *';
+    const values = [`%${request.params.author}%`];
+
+    try {
+        const result = await pool.query(theQuery, values);
+        if (result.rowCount > 0) {
+            response.send({
+                entry: 'All books written by ' + request.params.author + ' have' +
+                    ' been successfully deleted'
+            });
+        } else {
+            response.status(404).send({
+                message: 'No matching authors found',
+            });
+        }
+    } catch (error) {
+        //log the error
+        console.error('DB Query error on DELETE /:author');
+        console.error(error);
+        response.status(500).send({
+            message: 'server error - contact support',
+        });
+    }
+});
+
 export { bookRouter };
