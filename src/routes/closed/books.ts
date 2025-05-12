@@ -185,6 +185,52 @@ bookRouter.get(
         }
     }
 );
+
+/**
+ * @api {get} /book/title/:title Request to retrieve books by Title
+ * @apiName GetBooksByTitle
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves all books that match the given Title (partial matches allowed). Closed route, requires auth. token.
+ *
+ * @apiParam {String} title Title or part of the title to search for.
+ *
+ * @apiSuccess {Object[]} entries List of books written with the specified title.
+ *
+ * @apiError (Error 400) InvalidParameter Invalid or missing title parameter.
+ * @apiError (Error 404) NotFound No books found for the specified title.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
+bookRouter.get(
+    '/title/:title',
+    async (request: Request, response: Response) => {
+        const theQuery =
+            "SELECT * FROM books WHERE title ILIKE '%' || $1 || '%'";
+        const values = [request.params.title];
+        try {
+            if (!isStringProvided(request.params.title)) {
+                console.error('Invalid or missing title parameter');
+                response.status(400).json({
+                    message: 'Invalid or missing title parameter',
+                });
+                return;
+            }
+            const result = await pool.query(theQuery, values);
+            if (result.rowCount > 0) {
+                return response.json({ entries: result.rows });
+            } else {
+                return response.status(404).json({
+                    message: 'No books found with that title',
+                });
+            }
+        } catch (error) {
+            console.error('DB Query error on GET /:title', error);
+            return response.status(500).json({
+                message: 'server error – contact support',
+            });
+        }
+    }
+);
+
 /**
  * @api {post} /book/ Request to add a book
  * @apiName AddBook
