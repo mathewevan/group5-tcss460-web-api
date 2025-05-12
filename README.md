@@ -5,7 +5,7 @@
 - [GitHub Pages API Documentation](https://mathewevan.github.io/group5-tcss460-web-api/docs)
 
 ## Backend Production Sprint Contribution
-- Matt: 
+- Matt: Created a route to delete all books by an author as well as testing. Added pagination to get by publication year.
 - Kaely: Greate route for get by title and publication year as well as corresponding tests.
 - Kylie: Created the route and tests for getting a book by rating and updated
 - Ken: Route and tests created for deleting book by ISBN.
