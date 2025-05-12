@@ -235,12 +235,6 @@ bookRouter.get(
  * @apiDescription Retrieves books based on the provided average rating number or rating category. Closed route, requires auth. token.
  *
  * @apiBody {Number} rating_avg Average rating of the book.
- * @apiBody {Number} rating_count Total number of ratings.
- * @apiBody {Number} ratings_1_star Count of 1-star ratings.
- * @apiBody {Number} ratings_2_star Count of 2-star ratings.
- * @apiBody {Number} ratings_3_star Count of 3-star ratings.
- * @apiBody {Number} ratings_4_star Count of 4-star ratings.
- * @apiBody {Number} ratings_5_star Count of 5-star ratings.
  *
  * @apiSuccess {Object} entry Details of the found book.
  *
@@ -280,8 +274,17 @@ bookRouter.get(
  * @api {get} /book/year/:original_publication_year Request to retrieve a book by publication year
  * @apiName GetBookByPublicationYear
  * @apiGroup Book (Closed)
- * @apiDescription Retrieves a single book based on the provided publication year. Closed route, requires auth. token.
+ * @apiDescription Retrieves a paginated list of books based on the provided publication year. Closed route, requires auth. token.
  *
+ * @apiParam {Number} [limit=10] The number of books to return per page.
+ * @apiParam {Number} [offset=0] The offset for pagination.
+ *
+ * @apiSuccess {Object[]} entries List of books.
+ * @apiSuccess {Object} pagination Pagination details.
+ * @apiSuccess {Number} pagination.totalRecords Total number of records available.
+ * @apiSuccess {Number} pagination.limit Number of records returned per page.
+ * @apiSuccess {Number} pagination.offset Offset for pagination.
+ * @apiSuccess {Number} pagination.nextPage Offset value for the next page.
  * @apiParam {String} publication_year The publication year of the book.
  *
  * @apiSuccess {Object} entry Details of the found book.
