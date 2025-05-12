@@ -234,7 +234,7 @@ bookRouter.get(
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves books based on the provided average rating number or rating category. Closed route, requires auth. token.
  *
- * @apiBody {Number} rating_avg Average rating of the book.
+ * @apiParam {Number} rating_avg Average rating of the book.
  *
  * @apiSuccess {Object} entry Details of the found book.
  *
@@ -271,11 +271,12 @@ bookRouter.get(
 );
 
 /**
- * @api {get} /book/year/:original_publication_year Request to retrieve a book by publication year
+ * @api {get} /book/year/:original_publication_year Request to retrieve a book by publication year.
  * @apiName GetBookByPublicationYear
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves a paginated list of books based on the provided publication year. Closed route, requires auth. token.
  *
+ * @apiParam {Number} original_publication_year The publication year of the book(s) to search for.
  * @apiParam {Number} [limit=10] The number of books to return per page.
  * @apiParam {Number} [offset=0] The offset for pagination.
  *
@@ -285,7 +286,6 @@ bookRouter.get(
  * @apiSuccess {Number} pagination.limit Number of records returned per page.
  * @apiSuccess {Number} pagination.offset Offset for pagination.
  * @apiSuccess {Number} pagination.nextPage Offset value for the next page.
- * @apiParam {String} publication_year The publication year of the book.
  *
  * @apiSuccess {Object} entry Details of the found book.
  *
