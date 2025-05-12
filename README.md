@@ -6,7 +6,7 @@
 
 ## Backend Production Sprint Contribution
 - Matt: 
-- Kaely: 
+- Kaely: Greate route for get by title and publication year as well as corresponding tests.
 - Kylie: Created the route and tests for getting a book by rating and updated
 - Ken: Route and tests created for deleting book by ISBN.
 
