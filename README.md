@@ -8,7 +8,7 @@
 - Matt: 
 - Kaely: 
 - Kylie: Created the route and tests for getting a book by rating and updated
-- Ken: 
+- Ken: Route and tests created for deleting book by ISBN.
 
 ## Backend Production Sprint Meetings
 - Doing our communication through a Discord Server for our Group, messages and meetings in a voice channel.
