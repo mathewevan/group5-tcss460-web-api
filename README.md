@@ -1,19 +1,19 @@
-# Published Web API version Beta II
+# Published Web API version Production
  
 ## Links
 - [Heroku Web API](https://group5-tcss460-web-api-865cf04f06ba.herokuapp.com/)
 - [GitHub Pages API Documentation](https://mathewevan.github.io/group5-tcss460-web-api/docs)
 
-## Beta II Sprint Contribution
-- Matt: Created route for getting books with pagination and tests for said route. Assisted in debugging and general team support.
-- Kaely: Created tests for updating password route.
-- Kylie: Created the base for the tests of changing a book's rating.
-- Ken: Created routes for changing user password and updating a specific book's rating(s).
+## Backend Production Sprint Contribution
+- Matt: 
+- Kaely: 
+- Kylie: Created the route and tests for getting a book by rating and updated
+- Ken: 
 
-## Beta II Sprint Meetings
+## Backend Production Sprint Meetings
 - Doing our communication through a Discord Server for our Group, messages and meetings in a voice channel.
-- Tuesday: 8pm - 8:30pm, discussed how tasks would be split up for this beta version.
-- Sunday: 8pm - 11pm, Performing and debugging tests in Postman, finalizing submission.
+- Tuesday: 8pm - 10:30pm, discussed how tasks would be split up for the production version while working on the React tutorial.
+- Sunday: 8pm - 11pm, Performing and debugging tests in Postman, finalizing the production version.
 
-## Beta II Sprint Comments
+## Backend Production Sprint Comments
 - N/A
