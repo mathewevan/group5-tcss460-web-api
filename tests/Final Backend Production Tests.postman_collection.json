@@ -1,0 +1,639 @@
+{
+	"info": {
+		"_postman_id": "7d9a35d9-e500-4056-a6e9-4849b4b4d4a4",
+		"name": "Final Backend Production Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44127359",
+		"_collection_link": "https://kaely-3655961.postman.co/workspace/Kaely's-Workspace~aeaa6066-b254-4a5d-86d5-7dc5c7e86960/collection/44127359-7d9a35d9-e500-4056-a6e9-4849b4b4d4a4?action=share&source=collection_link&creator=44127359"
+	},
+	"item": [
+		{
+			"name": "Get by Title Success Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for successful response\r",
+							"pm.test(\"Status code is 200 for valid title search\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains 'entries' property\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('entries');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Entries is an array\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData.entries).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Each book entry contains title matching search term\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    const titleSearch = pm.variables.get(\"title\") || pm.request.url.path[pm.request.url.path.length - 1];\r",
+							"\r",
+							"    if (jsonData.entries.length > 0) {\r",
+							"        jsonData.entries.forEach(book => {\r",
+							"            pm.expect(book.title.toLowerCase()).to.include(titleSearch.toLowerCase()); // Fixed 'titles' to 'title'\r",
+							"        });\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test for authentication (this is a closed route requiring auth token)\r",
+							"pm.test(\"Authentication token is provided\", function() {\r",
+							"    const authHeader = pm.request.headers.get('Authorization');\r",
+							"    pm.expect(authHeader).to.exist;\r",
+							"    pm.expect(authHeader).to.include('Bearer ');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/title/harry",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"title",
+						"harry"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete by Author Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body contains success message for the correct author\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    \r",
+							"    // Get author from request\r",
+							"    const author = 'Kaely';\r",
+							"    \r",
+							"    // Expected format\r",
+							"    const expectedEntry = `All books written by ${author} have been successfully deleted`;\r",
+							"    \r",
+							"    pm.expect(responseBody).to.have.property('entry');\r",
+							"    pm.expect(responseBody.entry).to.equal(expectedEntry);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const baseUrl = pm.environment.get(\"base_url\");\r",
+							"const author = 'Kaely';\r",
+							"let bookId = 1132123334;\r",
+							"\r",
+							"// Get authentication token if needed\r",
+							"const authToken = pm.environment.get(\"authtoken\"); // Make sure this is set in your environment\r",
+							"\r",
+							"// Setup headers for all requests\r",
+							"const headers = {\r",
+							"    \"Content-Type\": \"application/json\"\r",
+							"};\r",
+							"\r",
+							"// Add authorization header if token exists\r",
+							"if (authToken) {\r",
+							"    headers[\"Authorization\"] = `Bearer ${authToken}`;\r",
+							"    // Or use the appropriate auth format: \"Basic\", etc. depending on your API\r",
+							"}\r",
+							"\r",
+							"// try to create book w/ expected author\r",
+							"pm.sendRequest({\r",
+							"    url: `${baseUrl}/book/author/${author}`,\r",
+							"    method: \"GET\",\r",
+							"    header: headers\r",
+							"}, (err, res) => {\r",
+							"    if (err) {\r",
+							"        console.error(\"Error in pre-request:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    // 2) If not found, POST a new one\r",
+							"    console.log(\"POSTing new book to match isbn\")\r",
+							"    if (res.code === 404) {\r",
+							"        pm.sendRequest({\r",
+							"            url: `${baseUrl}/book/`,\r",
+							"            method: \"POST\",\r",
+							"            header: headers,\r",
+							"            body: {\r",
+							"                mode: \"raw\",\r",
+							"                raw: JSON.stringify({\r",
+							"                    id:               bookId,\r",
+							"                    isbn13:           1010101010101,\r",
+							"                    authors:          'Kaely',\r",
+							"                    publication_year: 2025,\r",
+							"                    original_title:   \"Auto‑Created Title\",\r",
+							"                    title:            \"Auto‑Created Title\",\r",
+							"                    rating_avg:       0,\r",
+							"                    rating_count:     0,\r",
+							"                    ratings_1_star:   0,\r",
+							"                    ratings_2_star:   0,\r",
+							"                    ratings_3_star:   0,\r",
+							"                    ratings_4_star:   0,\r",
+							"                    ratings_5_star:   0,\r",
+							"                    image_url:        \"https://example.com/cover.jpg\",\r",
+							"                    image_small_url:  \"https://example.com/cover_small.jpg\"\r",
+							"                })\r",
+							"            }\r",
+							"        }, (err2, res2) => {\r",
+							"            if (err2) {\r",
+							"                console.error(\"Error creating book:\", err2);\r",
+							"                return;\r",
+							"            }\r",
+							"            \r",
+							"            console.log(\"Book creation response:\", res2.code, res2.status);\r",
+							"            \r",
+							"            if (res2.code !== 201) {\r",
+							"                console.error(\"Failed to create book:\", res2.text());\r",
+							"            } else {\r",
+							"                console.log(\"Successfully created book:\", res2.json());\r",
+							"                \r",
+							"                // Add a delay to ensure the book is properly registered in the database\r",
+							"                setTimeout(() => {\r",
+							"                    // Now execute the actual DELETE request\r",
+							"                    console.log(\"Now executing the DELETE request...\");\r",
+							"                    pm.variables.set(\"testReady\", \"true\");\r",
+							"                }, 1000);\r",
+							"            }\r",
+							"        });\r",
+							"    } else if (res.code === 401) {\r",
+							"        console.error(\"Authentication required! Please check your auth_token in the environment.\");\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    } else if (res.code === 200) {\r",
+							"        console.log(\"Book already exists, proceeding with DELETE test\");\r",
+							"        pm.variables.set(\"testReady\", \"true\");\r",
+							"    } else {\r",
+							"        console.log(\"Unexpected response:\", res.code, res.status);\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/Kaely",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"Kaely"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get by Year Success Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for successful response\r",
+							"pm.test(\"Status code is 200 for valid production year search\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains 'entries' property\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData).to.have.property('entry');  \r",
+							"});\r",
+							"\r",
+							"pm.test(\"Entries is an array\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    pm.expect(jsonData.entry).to.be.an('array');  \r",
+							"});\r",
+							"\r",
+							"pm.test(\"Each book entry contains publication year matching search term\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    const yearSearch = pm.variables.get(\"year\") || pm.request.url.path[pm.request.url.path.length - 1];\r",
+							"\r",
+							"    if (jsonData.entry.length > 0) {  \r",
+							"        jsonData.entry.forEach(book => {\r",
+							"            pm.expect(book.publication_year.toString().toLowerCase()).to.include(yearSearch.toLowerCase());  \r",
+							"        });\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Test for authentication (this is a closed route requiring auth token)\r",
+							"pm.test(\"Authentication token is provided\", function() {\r",
+							"    const authHeader = pm.request.headers.get('Authorization');\r",
+							"    pm.expect(authHeader).to.exist;\r",
+							"    pm.expect(authHeader).to.include('Bearer ');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/year/2010",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"year",
+						"2010"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get by Rating Success Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 for valid rating\", function () {\r",
+							" pm.response.to.have.status(200);\r",
+							"});                        \r",
+							"\r",
+							"pm.test(\"Response contains 'entry' property\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property('entry');\r",
+							"});\r",
+							"                            \r",
+							"pm.test(\"All entries contain rating_avg property\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    console.log(\"Response JSON:\", jsonData);\r",
+							"    \r",
+							"    pm.expect(jsonData).to.have.property('entry');\r",
+							"    pm.expect(jsonData.entry).to.be.an('array');\r",
+							"    \r",
+							"    if (jsonData.entry.length > 0) {\r",
+							"        jsonData.entry.forEach(function(book, index) {\r",
+							"            pm.expect(book, `Book at index ${index}`).to.have.property('rating_avg');\r",
+							"        });\r",
+							"    } else {\r",
+							"        console.log(\"No books found in the response\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/rating/4.34",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"rating",
+						"4.34"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test isbn deletion success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"if (pm.response.code === 200) {\r",
+							"    pm.test(\"Delete success message\", () => {\r",
+							"        pm.expect(pm.response.json().message).to.eql(\"Book deleted from database\");\r",
+							"    });\r",
+							"} else { // This test should not run, pre-request creates a matching isbn book entry if doesn't exist.\r",
+							"    console.error(\"Unexpected response:\", pm.response.text());\r",
+							"    pm.test(\"Unexpected response - should have been 200\", () => {\r",
+							"        pm.expect(pm.response.code).to.equal(200);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const baseUrl = pm.environment.get(\"base_url\");\r",
+							"const isbn = 1234567891011;\r",
+							"let bookId = 1132123334;\r",
+							"\r",
+							"// Get authentication token if needed\r",
+							"const authToken = pm.environment.get(\"authtoken\"); // Make sure this is set in your environment\r",
+							"\r",
+							"// Setup headers for all requests\r",
+							"const headers = {\r",
+							"    \"Content-Type\": \"application/json\"\r",
+							"};\r",
+							"\r",
+							"// Add authorization header if token exists\r",
+							"if (authToken) {\r",
+							"    headers[\"Authorization\"] = `Bearer ${authToken}`;\r",
+							"    // Or use the appropriate auth format: \"Basic\", etc. depending on your API\r",
+							"}\r",
+							"\r",
+							"// try to create book w/ expected isbn\r",
+							"pm.sendRequest({\r",
+							"    url: `${baseUrl}/book/isbn/${isbn}`,\r",
+							"    method: \"GET\",\r",
+							"    header: headers\r",
+							"}, (err, res) => {\r",
+							"    if (err) {\r",
+							"        console.error(\"Error in pre-request:\", err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    // 2) If not found, POST a new one\r",
+							"    console.log(\"POSTing new book to match isbn\")\r",
+							"    if (res.code === 404) {\r",
+							"        // if you don't already have a bookId, set one now\r",
+							"        if (!bookId) {\r",
+							"            bookId = Date.now();  \r",
+							"            pm.environment.set(\"bookId\", bookId);\r",
+							"        }\r",
+							"\r",
+							"        pm.sendRequest({\r",
+							"            url: `${baseUrl}/book/`,\r",
+							"            method: \"POST\",\r",
+							"            header: headers,\r",
+							"            body: {\r",
+							"                mode: \"raw\",\r",
+							"                raw: JSON.stringify({\r",
+							"                    id:               bookId,\r",
+							"                    isbn13:           isbn,\r",
+							"                    authors:          \"Auto Test Author\",\r",
+							"                    publication_year: 2025,\r",
+							"                    original_title:   \"Auto‑Created Title\",\r",
+							"                    title:            \"Auto‑Created Title\",\r",
+							"                    rating_avg:       0,\r",
+							"                    rating_count:     0,\r",
+							"                    ratings_1_star:   0,\r",
+							"                    ratings_2_star:   0,\r",
+							"                    ratings_3_star:   0,\r",
+							"                    ratings_4_star:   0,\r",
+							"                    ratings_5_star:   0,\r",
+							"                    image_url:        \"https://example.com/cover.jpg\",\r",
+							"                    image_small_url:  \"https://example.com/cover_small.jpg\"\r",
+							"                })\r",
+							"            }\r",
+							"        }, (err2, res2) => {\r",
+							"            if (err2) {\r",
+							"                console.error(\"Error creating book:\", err2);\r",
+							"                return;\r",
+							"            }\r",
+							"            \r",
+							"            console.log(\"Book creation response:\", res2.code, res2.status);\r",
+							"            \r",
+							"            if (res2.code !== 201) {\r",
+							"                console.error(\"Failed to create book:\", res2.text());\r",
+							"            } else {\r",
+							"                console.log(\"Successfully created book:\", res2.json());\r",
+							"                \r",
+							"                // Add a delay to ensure the book is properly registered in the database\r",
+							"                setTimeout(() => {\r",
+							"                    // Now execute the actual DELETE request\r",
+							"                    console.log(\"Now executing the DELETE request...\");\r",
+							"                    pm.variables.set(\"testReady\", \"true\");\r",
+							"                }, 1000);\r",
+							"            }\r",
+							"        });\r",
+							"    } else if (res.code === 401) {\r",
+							"        console.error(\"Authentication required! Please check your auth_token in the environment.\");\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    } else if (res.code === 200) {\r",
+							"        console.log(\"Book already exists, proceeding with DELETE test\");\r",
+							"        pm.variables.set(\"testReady\", \"true\");\r",
+							"    } else {\r",
+							"        console.log(\"Unexpected response:\", res.code, res.status);\r",
+							"        pm.variables.set(\"testReady\", \"false\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/book/isbn/1234567891011",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"isbn",
+						"1234567891011"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test isbn deletion failure",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", () => {\r",
+							"    pm.expect(pm.response.code).to.eql(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Not‑found message\", () => { // shouldn't get this test, creating book that matches isbn in pre-request.\r",
+							"    pm.expect(pm.response.json().message).to.eql(\"No book found for specified ISBN‑13\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authtoken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/book/isbn/123456789101132131",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"isbn",
+						"123456789101132131"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
