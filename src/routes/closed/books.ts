@@ -229,6 +229,96 @@ bookRouter.get(
 );
 
 /**
+ * @api {get} /book/rating/:ratingAvg Request to retrieve a book by rating average
+ * @apiName GetBookByRating
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves books based on the provided average rating number or rating category. Closed route, requires auth. token.
+ *
+ * @apiBody {Number} rating_avg Average rating of the book.
+ * @apiBody {Number} rating_count Total number of ratings.
+ * @apiBody {Number} ratings_1_star Count of 1-star ratings.
+ * @apiBody {Number} ratings_2_star Count of 2-star ratings.
+ * @apiBody {Number} ratings_3_star Count of 3-star ratings.
+ * @apiBody {Number} ratings_4_star Count of 4-star ratings.
+ * @apiBody {Number} ratings_5_star Count of 5-star ratings.
+ *
+ * @apiSuccess {Object} entry Details of the found book.
+ *
+ * @apiError (Error 404) NotFound No book found with the specified ISBN-13.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
+bookRouter.get(
+    '/rating/:ratingAvg',
+    async (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE ratingAvg = $1 OR rating_1_star = $1 OR rating_2_star = $1 OR rating_3_star = $1 OR rating_4_star = $1 OR rating_5_star = $1';
+        const values = [request.params.rating_avg];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entry: result.rows[0],
+                    });
+                } else {
+                    response.status(404).send({
+                        message: 'Books of this rating were not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on GET /:ratingAvg');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
+/**
+ * @api {get} /book/year/:original_publication_year Request to retrieve a book by publication year
+ * @apiName GetBookByPublicationYear
+ * @apiGroup Book (Closed)
+ * @apiDescription Retrieves a single book based on the provided publication year. Closed route, requires auth. token.
+ *
+ * @apiParam {String} publication_year The publication year of the book.
+ *
+ * @apiSuccess {Object} entry Details of the found book.
+ *
+ * @apiError (Error 404) NotFound No book found with the specified publication year.
+ * @apiError (Error 500) ServerError Internal server error.
+ */
+bookRouter.get(
+    '/year/:publication_year',
+    async (request: Request, response: Response) => {
+        const theQuery = 'SELECT * FROM books WHERE publication_year = $1';
+        const values = [request.params.publication_year];
+
+        pool.query(theQuery, values)
+            .then((result) => {
+                if (result.rowCount > 0) {
+                    response.send({
+                        entry: result.rows,
+                    });
+                } else {
+                    response.status(404).send({
+                        message: 'Publication Year not found',
+                    });
+                }
+            })
+            .catch((error) => {
+                //log the error
+                console.error('DB Query error on GET /:publication_year');
+                console.error(error);
+                response.status(500).send({
+                    message: 'server error - contact support',
+                });
+            });
+    }
+);
+
+/**
  * @api {post} /book/ Request to add a book
  * @apiName AddBook
  * @apiGroup Book (Closed)
