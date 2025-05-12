@@ -229,7 +229,7 @@ bookRouter.get(
 );
 
 /**
- * @api {get} /book/rating/:ratingAvg Request to retrieve a book by rating average
+ * @api {get} /book/rating/:rating_avg Request to retrieve a book by rating average
  * @apiName GetBookByRating
  * @apiGroup Book (Closed)
  * @apiDescription Retrieves books based on the provided average rating number or rating category. Closed route, requires auth. token.
@@ -248,9 +248,9 @@ bookRouter.get(
  * @apiError (Error 500) ServerError Internal server error.
  */
 bookRouter.get(
-    '/rating/:ratingAvg',
+    '/rating/:rating_avg',
     async (request: Request, response: Response) => {
-        const theQuery = 'SELECT * FROM books WHERE ratingAvg = $1 OR rating_1_star = $1 OR rating_2_star = $1 OR rating_3_star = $1 OR rating_4_star = $1 OR rating_5_star = $1';
+        const theQuery = 'SELECT * FROM books WHERE rating_avg= $1';
         const values = [request.params.rating_avg];
 
         pool.query(theQuery, values)
@@ -267,7 +267,7 @@ bookRouter.get(
             })
             .catch((error) => {
                 //log the error
-                console.error('DB Query error on GET /:ratingAvg');
+                console.error('DB Query error on GET /:rating_avg');
                 console.error(error);
                 response.status(500).send({
                     message: 'server error - contact support',
