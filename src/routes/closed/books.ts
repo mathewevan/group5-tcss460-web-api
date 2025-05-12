@@ -431,6 +431,21 @@ bookRouter.patch(
     }
 );
 
+/**
+ * @api {delete} /book/:author Request to delete all books by author
+ * @apiName DeleteBooksByAuthor
+ * @apiGroup Book (Closed)
+ *
+ * @apiDescription Deletes all books whose `authors` field contains the given author string.
+ *
+ * @apiParam  {String} author    Partial or full author name to match (ILIKE `%author%`).
+ *
+ * @apiSuccess {Object} entry    Confirmation of deletion.
+ * @apiSuccess {String} entry    All books written by the specified author have been successfully deleted.
+ *
+ * @apiError (Error 404) {String} message   No matching authors found.
+ * @apiError (Error 500) {String} message   Internal server error.
+ */
 bookRouter.delete('/:author', async (request: Request, response: Response) => {
     const theQuery = 'DELETE FROM books WHERE authors ILIKE $1 RETURNING *';
     const values = [`%${request.params.author}%`];
