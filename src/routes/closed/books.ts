@@ -9,6 +9,33 @@ const bookRouter: Router = express.Router();
 const isStringProvided = validationFunctions.isStringProvided;
 const isNumberProvided = validationFunctions.isNumberProvided;
 
+const formatBookData = (dbRow: any) => {
+    if (!dbRow) {
+        return null;
+    }
+    return {
+        id: dbRow.id,
+        isbn13: dbRow.isbn13,
+        authors: dbRow.authors,
+        publication: dbRow.publication_year, 
+        original_title: dbRow.original_title,
+        title: dbRow.title,
+        ratings: {
+            average: dbRow.rating_avg !== null ? parseFloat(dbRow.rating_avg) : null,
+            count: dbRow.rating_count !== null ? parseInt(dbRow.rating_count, 10) : null,
+            rating_1: dbRow.rating_1_star !== null ? parseInt(dbRow.rating_1_star, 10) : null,
+            rating_2: dbRow.rating_2_star !== null ? parseInt(dbRow.rating_2_star, 10) : null,
+            rating_3: dbRow.rating_3_star !== null ? parseInt(dbRow.rating_3_star, 10) : null,
+            rating_4: dbRow.rating_4_star !== null ? parseInt(dbRow.rating_4_star, 10) : null,
+            rating_5: dbRow.rating_5_star !== null ? parseInt(dbRow.rating_5_star, 10) : null,
+        },
+        icons: {
+            large: dbRow.image_url,
+            small: dbRow.image_small_url,
+        },
+    };
+};
+
 /**
  * @api {get} /book/all Request to get paginated books
  * @apiName Get Books Paginated
@@ -84,9 +111,9 @@ bookRouter.get('/all', async (request: Request, response: Response) => {
         'SELECT count(*) AS exact_count FROM books;'
     );
     const count = result.rows[0].exact_count;
-
+    const formattedEntries = rows.map(row => formatBookData(row));
     response.send({
-        entries: rows,
+        entries: formattedEntries,
         pagination: {
             totalRecords: count,
             limit,
@@ -115,11 +142,13 @@ bookRouter.get(
         const theQuery = 'SELECT * FROM books WHERE isbn13 = $1';
         const values = [request.params.isbn13];
 
+
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
+                    const formattedEntry = formatBookData(result.rows[0]);
                     response.send({
-                        entry: result.rows[0],
+                        entry: formattedEntry,
                     });
                 } else {
                     response.status(404).send({
@@ -158,6 +187,7 @@ bookRouter.get(
         const theQuery =
             "SELECT * FROM books WHERE authors ILIKE '%' || $1 || '%'";
         const values = [request.params.author];
+        const { rows } = await pool.query(theQuery, values);
         try {
             if (!isStringProvided(request.params.author)) {
                 console.error('Invalid or missing author parameter');
@@ -168,7 +198,8 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                return response.json({ entries: result.rows });
+                const formattedEntries = rows.map(row => formatBookData(row));
+                return response.json({ formattedEntries });
             } else {
                 return response.status(404).json({
                     message: 'No books found for that author',
@@ -213,7 +244,10 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                return response.json({ entries: result.rows });
+                const formattedEntry = formatBookData(result.rows[0]);
+                response.send({
+                    entry: formattedEntry,
+                });
             } else {
                 return response.status(404).json({
                     message: 'No books found with that title',
@@ -246,12 +280,14 @@ bookRouter.get(
     async (request: Request, response: Response) => {
         const theQuery = 'SELECT * FROM books WHERE rating_avg= $1';
         const values = [request.params.rating_avg];
+        const { rows } = await pool.query(theQuery, values);
 
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
+                    const formattedEntries = rows.map(row => formatBookData(row));
                     response.send({
-                        entry: result.rows,
+                        entry: formattedEntries,
                     });
                 } else {
                     response.status(404).send({
@@ -310,8 +346,9 @@ bookRouter.get(
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
+                    const formattedEntries = rows.map(row => formatBookData(row));
                     response.send({
-                        entries: rows,
+                        entries: formattedEntries,
                         pagination: {
                             limit,
                             offset,
