@@ -198,8 +198,8 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                const formattedEntries = rows.map(row => formatBookData(row));
-                return response.json({ formattedEntries });
+                const entries = rows.map(row => formatBookData(row));
+                return response.json({ entries });
             } else {
                 return response.status(404).json({
                     message: 'No books found for that author',
@@ -232,7 +232,7 @@ bookRouter.get(
     '/title/:title',
     async (request: Request, response: Response) => {
         const theQuery =
-            "SELECT * FROM books WHERE title ILIKE '%' || $1 || '%'";
+            "SELECT * FROM books WHERE title ILIKE '%$1%'";
         const values = [request.params.title];
         try {
             if (!isStringProvided(request.params.title)) {
@@ -244,9 +244,9 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                const formattedEntry = formatBookData(result.rows[0]);
+                const entries = formatBookData(result.rows[0]);
                 response.send({
-                    entry: formattedEntry,
+                    entry: entries,
                 });
             } else {
                 return response.status(404).json({
@@ -285,10 +285,8 @@ bookRouter.get(
         pool.query(theQuery, values)
             .then((result) => {
                 if (result.rowCount > 0) {
-                    const formattedEntries = rows.map(row => formatBookData(row));
-                    response.send({
-                        entry: formattedEntries,
-                    });
+                    const entries = rows.map(row => formatBookData(row));
+                    return response.json({ entries });
                 } else {
                     response.status(404).send({
                         message: 'Books of this rating were not found',
@@ -341,7 +339,7 @@ bookRouter.get(
                 : 0;
         const theQuery = 'SELECT * FROM books WHERE publication_year = $1 LIMIT $2 OFFSET $3';
         const values = [request.params.publication_year, limit, offset];
-        const { rows } = await pool.query(theQuery, values);
+        const { rows } = await pool.query(theQuery, values); //Pagination could require a new const using the total amount of records.
 
         pool.query(theQuery, values)
             .then((result) => {
