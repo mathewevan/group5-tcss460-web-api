@@ -377,7 +377,7 @@ bookRouter.get(
  * @apiDescription Adds a new book to the database. Closed route, requires auth. token.
  *
  * @apiBody {Number} id Unique ID of the book.
- * @apiBody {String} isbn13 ISBN-13 number of the book.
+ * @apiBody {Number} isbn13 ISBN-13 number of the book.
  * @apiBody {String} authors Author(s) of the book.
  * @apiBody {Number} publication_year Year the book was published.
  * @apiBody {String} original_title Original title of the book.
