@@ -232,7 +232,7 @@ bookRouter.get(
     '/title/:title',
     async (request: Request, response: Response) => {
         const theQuery =
-            "SELECT * FROM books WHERE title ILIKE '%$1%'";
+            "SELECT * FROM books WHERE title ILIKE '%' || $1 || '%'";
         const values = [request.params.title];
         try {
             if (!isStringProvided(request.params.title)) {
@@ -244,9 +244,9 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                const entries = formatBookData(result.rows[0]);
+                const formattedEntry = formatBookData(result.rows[0]);
                 response.send({
-                    entry: entries,
+                    entries: formattedEntry,
                 });
             } else {
                 return response.status(404).json({
