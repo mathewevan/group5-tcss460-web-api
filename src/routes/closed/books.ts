@@ -244,9 +244,9 @@ bookRouter.get(
             }
             const result = await pool.query(theQuery, values);
             if (result.rowCount > 0) {
-                const formattedEntry = formatBookData(result.rows[0]);
+                const entry = formatBookData(result.rows[0]);
                 response.send({
-                    entries: formattedEntry,
+                    entry: entry,
                 });
             } else {
                 return response.status(404).json({
